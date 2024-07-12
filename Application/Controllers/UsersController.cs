@@ -10,14 +10,9 @@ using Application.Models;
 
 namespace Application.Controllers
 {
-    public class UsersController : Controller
+    public class UsersController(ApplicationDbContext context) : Controller
     {
-        private readonly ApplicationDbContext _context;
-
-        public UsersController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         // GET: Users
         public async Task<IActionResult> Index()

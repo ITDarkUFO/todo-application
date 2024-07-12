@@ -60,7 +60,6 @@ namespace Application.Data
                 entity.HasKey(e => e.Id).HasName("todo-item_pkey");
 
                 entity.HasIndex(e => e.Title);
-
                 entity.Property(e => e.Title).IsRequired();
             });
         }

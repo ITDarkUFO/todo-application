@@ -9,61 +9,47 @@ using Application.Data;
 using Application.Models;
 using Npgsql;
 
-namespace Application.Controllers
+namespace Application.Areas.Administration.Controllers
 {
+    [Area("Administration")]
+    [Route("admin/priorities")]
     public class PrioritiesController(ApplicationDbContext context) : Controller
     {
         private readonly ApplicationDbContext _context = context;
 
-        // GET: Priorities
+        [Route("")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Priorities.OrderBy(p => p.Level).ToListAsync());
         }
 
-        // GET: Priorities/Create
+        [Route("create")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Priorities/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("create")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Level")] Priority priority)
         {
+            if (await _context.Priorities.AsNoTracking()
+                .AnyAsync(p => p.Level == priority.Level))
+                ModelState.AddModelError("Level", $"Level {priority.Level} уже существует.");
+
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Add(priority);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateException ex)
-                {
-                    var innerException = ex.InnerException;
-
-                    if (innerException is PostgresException pgEx &&
-                        pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
-                    {
-                        switch (pgEx.SqlState)
-                        {
-                            case PostgresErrorCodes.UniqueViolation:
-                                ModelState.AddModelError("Level", "Level должен быть уникальным.");
-                                return BadRequest(ModelState);
-                        }
-                    }
-                }
+                _context.Add(priority);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
 
             return View(priority);
         }
 
-        // GET: Priorities/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [Route("edit")]
+        public async Task<IActionResult> Edit([FromQuery] int? id)
         {
             if (id == null)
             {
@@ -78,17 +64,19 @@ namespace Application.Controllers
             return View(priority);
         }
 
-        // POST: Priorities/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("edit")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Level")] Priority priority)
+        public async Task<IActionResult> Edit([FromForm] int id, [Bind("Id,Level")] Priority priority)
         {
             if (id != priority.Id)
-            {
                 return NotFound();
-            }
+
+            if (await _context.Priorities.AsNoTracking()
+                .AnyAsync(p => p.Level == priority.Level && p.Id != priority.Id))
+                ModelState.AddModelError("Level", $"Level {priority.Level} уже существует.");
 
             if (ModelState.IsValid)
             {
@@ -108,21 +96,7 @@ namespace Application.Controllers
                         throw;
                     }
                 }
-                catch (DbUpdateException ex)
-                {
-                    var innerException = ex.InnerException;
 
-                    if (innerException is PostgresException pgEx &&
-                        pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
-                    {
-                        switch (pgEx.SqlState)
-                        {
-                            case PostgresErrorCodes.UniqueViolation:
-                                ModelState.AddModelError("Level", "Level должен быть уникальным.");
-                                return BadRequest(ModelState);
-                        }
-                    }
-                }
 
                 return RedirectToAction(nameof(Index));
             }
@@ -130,8 +104,27 @@ namespace Application.Controllers
             return View(priority);
         }
 
-        // GET: Priorities/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [Route("details")]
+        public async Task<IActionResult> Details([FromQuery] int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var priority = await _context.Priorities.FindAsync(id);
+            if (priority == null)
+            {
+                return NotFound();
+            }
+
+            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority.Id == priority.Id).ToListAsync();
+
+            return View(priority);
+        }
+
+        [Route("delete")]
+        public async Task<IActionResult> Delete([FromQuery] int? id)
         {
             if (id == null)
             {
@@ -148,10 +141,10 @@ namespace Application.Controllers
             return View(priority);
         }
 
-        // POST: Priorities/Delete/5
+        [Route("delete")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed([FromForm] int id)
         {
             var priority = await _context.Priorities.FindAsync(id);
             if (priority != null)
