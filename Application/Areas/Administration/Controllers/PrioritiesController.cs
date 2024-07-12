@@ -20,7 +20,14 @@ namespace Application.Areas.Administration.Controllers
         [Route("")]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Priorities.OrderBy(p => p.Level).ToListAsync());
+            var priorities = await _context.Priorities.OrderBy(p => p.Level).ToListAsync();
+
+            foreach (var priority in priorities)
+            {
+                priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
+            }
+
+            return View(priorities);
         }
 
         [Route("create")]
@@ -118,7 +125,7 @@ namespace Application.Areas.Administration.Controllers
                 return NotFound();
             }
 
-            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority.Id == priority.Id).ToListAsync();
+            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
 
             return View(priority);
         }

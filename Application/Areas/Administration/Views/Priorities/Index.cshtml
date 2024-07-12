@@ -27,16 +27,21 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var priority in Model)
         {
             <tr>
-                <td>@Html.DisplayNameFor(model => model.Level) @Html.DisplayFor(modelItem => item.Level)</td>
-                <td>@item.ToDoItems</td>
+                <td>@Html.DisplayNameFor(model => model.Level) @Html.DisplayFor(modelItem => priority.Level)</td>
+                <td>
+                    @if (priority.ToDoItems is not null)
+                    {
+                        <span>@priority.ToDoItems.Count задач</span>
+                    }
+                </td>
                 <td class="d-inline-flex">
                     <div class="btn-group">
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary">Edit</a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger">Delete</a>
+                        <a asp-action="Edit" asp-route-id="@priority.Id" class="btn btn-outline-primary">Редактировать</a>
+                        <a asp-action="Details" asp-route-id="@priority.Id" class="btn btn-outline-primary">Подробнее</a>
+                        <a asp-action="Delete" asp-route-id="@priority.Id" class="btn btn-outline-danger">Удалить</a>
                     </div>
                 </td>
             </tr>

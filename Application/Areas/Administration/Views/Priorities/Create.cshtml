@@ -4,7 +4,15 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-area="Administration" asp-controller="Home" asp-action="Index">Админ-панель</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Приоритеты задач</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Добавление приоритета</li>
+    </ol>
+</nav>
+
+<h1>Добавление приоритета</h1>
 
 <h4>Priority</h4>
 <hr />

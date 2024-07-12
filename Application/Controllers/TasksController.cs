@@ -10,19 +10,21 @@ using Application.Models;
 
 namespace Application.Controllers
 {
-    public class TasksController : Controller
+    public class TasksController(ApplicationDbContext context) : Controller
     {
-        private readonly ApplicationDbContext _context;
-
-        public TasksController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         // GET: ToDoItems
         public async Task<IActionResult> Index()
         {
-            return View(await _context.ToDoItems.ToListAsync());
+            var tasks = await _context.ToDoItems.ToListAsync();
+
+            foreach (var task in tasks)
+            {
+                task.PriorityNavigation = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == task.Priority);
+            }
+
+            return View(tasks);
         }
 
         // GET: ToDoItems/Details/5
@@ -46,6 +48,8 @@ namespace Application.Controllers
         // GET: ToDoItems/Create
         public IActionResult Create()
         {
+            ViewData["Priorities"] = new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level");
+
             return View();
         }
 
@@ -54,7 +58,7 @@ namespace Application.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,IsCompleted,DueDate")] ToDoItem toDoItem)
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem toDoItem)
         {
             if (ModelState.IsValid)
             {
@@ -62,6 +66,11 @@ namespace Application.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewData["Priorities"] = new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level");
+
+            ViewData["Users"] = new SelectList(_context.Users, "Id", "Name");
+
             return View(toDoItem);
         }
 

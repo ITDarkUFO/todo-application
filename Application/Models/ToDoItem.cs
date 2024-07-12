@@ -4,16 +4,21 @@
     {
         public int Id { get; set; }
 
-        public string Title { get; set; } = default!;
+        public string Title { get; set; } = null!;
 
-        public string? Description { get; set; } = default!;
+        public string? Description { get; set; } = null!;
 
         public bool IsCompleted { get; set; }
 
         public DateTime? DueDate { get; set; }
 
-        public Priority Priority { get; set; } = default!;
+        public int Priority { get; set; }
 
-        public User User { get; set; } = default!;
+        public int User { get; set; }
+
+        public virtual Priority? PriorityNavigation { get; set; }
+
+        public virtual User? UserNavigation { get; set; }
+
     }
 }
