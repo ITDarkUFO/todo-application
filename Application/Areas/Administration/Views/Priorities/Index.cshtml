@@ -13,7 +13,7 @@
 
 
 <div class="d-inline-flex align-items-center">
-    <h1 class="d-flex">Приоритеты задач <span class="text-muted fw-normal mx-2">(@Model.Count())</span></h1>
+    <h1><span>Приоритеты задач</span><span class="text-muted fw-normal mx-2">(@Model.Count())</span></h1>
     <a class="btn btn-primary px-4 mx-3" asp-action="Create">&plus; Добавить приоритет</a>
 </div>
 <p class="text-muted">Добавляйте и изменяйте приоритеты для задач ToDo</p>
@@ -21,16 +21,16 @@
 <table class="table">
     <thead>
         <tr>
-            <th class="col-1">@Html.DisplayNameFor(model => model.Level)</th>
-            <th class="col-10">@Html.DisplayNameFor(model => model.ToDoItems)</th>
-            <th class="col-3 col-1"></th>
+            <th class="col-2">Уровень приоритета</th>
+            <th class="col-8">Количество задач</th>
+            <th class="col-2"></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var priority in Model)
         {
             <tr>
-                <td>@Html.DisplayNameFor(model => model.Level) @Html.DisplayFor(modelItem => priority.Level)</td>
+                <td>Уровень @Html.DisplayFor(modelItem => priority.Level)</td>
                 <td>
                     @if (priority.ToDoItems is not null)
                     {
@@ -41,10 +41,36 @@
                     <div class="btn-group">
                         <a asp-action="Edit" asp-route-id="@priority.Id" class="btn btn-outline-primary">Редактировать</a>
                         <a asp-action="Details" asp-route-id="@priority.Id" class="btn btn-outline-primary">Подробнее</a>
-                        <a asp-action="Delete" asp-route-id="@priority.Id" class="btn btn-outline-danger">Удалить</a>
+                        @* <a asp-action="Delete" asp-route-id="@priority.Id" class="btn btn-outline-danger">Удалить</a> *@
+                        <a class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal_@priority.Id">Удалить</a>
                     </div>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@foreach (var priority in Model)
+{
+    <div class="modal fade" id="deleteModal_@priority.Id" tabindex="-1" aria-labelledby="deleteModal_@priority.Id" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModal_@priority.Id">Удаление приоритета @priority.Level уровня</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>При удалении приоритета, он также будет удален из всех задач</p>
+                    <p class="text-danger">Вы уверены, что хотите удалить данный приоритет?</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-action="Delete">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Назад</button>
+                        <input type="hidden" name="Id" value="@priority.Id" />
+                        <input type="submit" value="Удалить" class="btn btn-danger" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

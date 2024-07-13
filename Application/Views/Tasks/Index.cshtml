@@ -1,33 +1,30 @@
 ﻿@model IEnumerable<Application.Models.ToDoItem>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Задачи ToDo";
 }
 
-<h1>Index</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Главная</a></li>
+        <li class="breadcrumb-item active">Задачи ToDo</li>
+    </ol>
+</nav>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<div class="d-inline-flex align-items-center">
+    <h1><span>Задачи ToDo</span><span class="text-muted fw-normal mx-2">(@Model.Count())</span></h1>
+    <a class="btn btn-primary px-4 mx-3" asp-action="Create">&plus; Добавить задачу</a>
+</div>
+<p class="text-muted">Добавляйте и изменяйте задачи ToDo</p>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsCompleted)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DueDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Priority)
-            </th>
-            <th></th>
+            <th class="col-1"></th>
+            <th class="col-4">Название</th>
+            <th class="col-1">Приоритет</th>
+            <th class="col-2">Срок выполнения</th>
+            <th class="col-2"></th>
         </tr>
     </thead>
     <tbody>
@@ -35,24 +32,24 @@
         {
             <tr>
                 <td>
+                    <input asp-for="@item.IsCompleted" class="form-check-input" />
+                </td>
+                <th>
                     @Html.DisplayFor(modelItem => item.Title)
-                </td>
+                </th>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsCompleted)
+                    @if (item.PriorityNavigation is not null)
+                        @item.PriorityNavigation!.Level
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.DueDate)
                 </td>
-                <td>
-                    @item.PriorityNavigation!.Level
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <td class="d-inline-flex">
+                    <div class="btn-group">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary">Редактировать</a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Подробнее</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger">Удалить</a>
+                    </div>
                 </td>
             </tr>
         }

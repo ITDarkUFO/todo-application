@@ -43,7 +43,10 @@ namespace Application.Areas.Administration.Controllers
         {
             if (await _context.Priorities.AsNoTracking()
                 .AnyAsync(p => p.Level == priority.Level))
-                ModelState.AddModelError("Level", $"Level {priority.Level} уже существует.");
+                ModelState.AddModelError("Level", $"Уровень приоритета {priority.Level} уже существует.");
+
+            if (priority.Level < 0)
+                ModelState.AddModelError("Level", "Уровень приоритета не может быть меньше нуля.");
 
             if (ModelState.IsValid)
             {
@@ -84,6 +87,9 @@ namespace Application.Areas.Administration.Controllers
             if (await _context.Priorities.AsNoTracking()
                 .AnyAsync(p => p.Level == priority.Level && p.Id != priority.Id))
                 ModelState.AddModelError("Level", $"Level {priority.Level} уже существует.");
+
+            if (priority.Level < 0)
+                ModelState.AddModelError("Level", "Уровень приоритета не может быть меньше нуля.");
 
             if (ModelState.IsValid)
             {

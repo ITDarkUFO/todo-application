@@ -1,24 +1,61 @@
 ﻿@model Application.Models.Priority
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Детали приоритета";
 }
 
-<h1>Details</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-area="Administration" asp-controller="Home" asp-action="Index">Админ-панель</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Приоритеты задач</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Детали приоритета</li>
+    </ol>
+</nav>
 
-<div>
-    <h4>Priority</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Level)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Level)
-        </dd>
-    </dl>
+<h1>Детали приоритета</h1>
+<p class="text-muted">Посмотрите информацию о приоритете и настроенных на него задач</p>
+
+<div class="row mb-2">
+    <div class="col-12 col-xl-6">
+        <div>
+            <label asp-for="Level" class="form-label">Уровень приоритета</label>
+            <input asp-for="Level" readonly class="form-control" placeholder="Уровень приоритета" />
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="row mb-2">
+    <div class="col-12 col-xl-6">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="col-3">Номер задачи</th>
+                    <th class="col-8">Название задачи</th>
+                    <th class="col-3"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.ToDoItems is not null)
+                {
+                    foreach (var task in Model.ToDoItems)
+                    {
+                        <tr>
+                            <th>@task.Id</th>
+                            <td>@task.Title</td>
+                            <td><a asp-area="" asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-primary">Подробнее</a></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-xl-6">
+        <div class="float-end">
+            <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
+            <a asp-action="Edit" class="btn btn-primary px-4" >Редактировать приоритет</a>
+        </div>
+    </div>
 </div>

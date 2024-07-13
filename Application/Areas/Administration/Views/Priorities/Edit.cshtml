@@ -1,34 +1,44 @@
 ﻿@model Application.Models.Priority
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактирование приоритета";
 }
 
-<h1>Edit</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-area="Administration" asp-controller="Home" asp-action="Index">Админ-панель</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Приоритеты задач</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Редактирование приоритета</li>
+    </ol>
+</nav>
 
-<h4>Priority</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Level" class="control-label"></label>
-                <input asp-for="Level" class="form-control" />
+<h1>Редактирование приоритета</h1>
+<p class="text-muted">Измените значение приоритета для указания в задачах ToDo</p>
+
+<form asp-action="Edit">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <div class="row mb-2">
+        <div class="col-12 col-xl-6">
+            <div class="form-floating">
+                <input asp-for="Level" class="form-control" placeholder="Уровень приоритета" min="0" autocomplete="off" />
+                <label asp-for="Level">Уровень приоритета</label>
                 <span asp-validation-for="Level" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="row">
+        <div class="col-12 col-xl-6">
+            <div class="float-end">
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
+                <input type="submit" value="Добавить" class="btn btn-primary px-5" />
+            </div>
+        </div>
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -10,11 +10,12 @@ using Application.Models;
 
 namespace Application.Controllers
 {
+    [Route("tasks")]
     public class TasksController(ApplicationDbContext context) : Controller
     {
         private readonly ApplicationDbContext _context = context;
 
-        // GET: ToDoItems
+        [Route("")]
         public async Task<IActionResult> Index()
         {
             var tasks = await _context.ToDoItems.ToListAsync();
@@ -27,8 +28,8 @@ namespace Application.Controllers
             return View(tasks);
         }
 
-        // GET: ToDoItems/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [Route("details")]
+        public async Task<IActionResult> Details([FromQuery] int? id)
         {
             if (id == null)
             {
@@ -45,7 +46,7 @@ namespace Application.Controllers
             return View(toDoItem);
         }
 
-        // GET: ToDoItems/Create
+        [Route("create")]
         public IActionResult Create()
         {
             ViewData["Priorities"] = new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level");
@@ -53,7 +54,7 @@ namespace Application.Controllers
             return View();
         }
 
-        // POST: ToDoItems/Create
+        [Route("create")]
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -74,8 +75,8 @@ namespace Application.Controllers
             return View(toDoItem);
         }
 
-        // GET: ToDoItems/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [Route("edit")]
+        public async Task<IActionResult> Edit([FromQuery] int? id)
         {
             if (id == null)
             {
@@ -90,12 +91,12 @@ namespace Application.Controllers
             return View(toDoItem);
         }
 
-        // POST: ToDoItems/Edit/5
+        [Route("edit")]
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,IsCompleted,DueDate")] ToDoItem toDoItem)
+        public async Task<IActionResult> Edit([FromQuery] int id, [Bind("Id,Title,Description,IsCompleted,DueDate")] ToDoItem toDoItem)
         {
             if (id != toDoItem.Id)
             {
@@ -125,8 +126,8 @@ namespace Application.Controllers
             return View(toDoItem);
         }
 
-        // GET: ToDoItems/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [Route("delete")]
+        public async Task<IActionResult> Delete([FromQuery] int? id)
         {
             if (id == null)
             {
@@ -143,7 +144,7 @@ namespace Application.Controllers
             return View(toDoItem);
         }
 
-        // POST: ToDoItems/Delete/5
+        [Route("delete")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
