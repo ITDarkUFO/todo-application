@@ -59,10 +59,18 @@ namespace Application.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem toDoItem)
+        public async Task<IActionResult> Create([FromForm] TimeOnly? dueTime, [Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem toDoItem)
         {
             if (ModelState.IsValid)
             {
+                if (toDoItem.DueDate is not null)
+                {
+                    if (dueTime is not null)
+                        toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(toDoItem.DueDate.Value), dueTime.Value, DateTimeKind.Utc);
+                    else
+                        toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(toDoItem.DueDate.Value), new TimeOnly(), DateTimeKind.Utc);
+                }
+
                 _context.Add(toDoItem);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

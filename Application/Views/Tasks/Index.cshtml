@@ -42,7 +42,17 @@
                         @item.PriorityNavigation!.Level
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DueDate)
+                    @if (item.DueDate is not null)
+                    {
+                        if (item.DueDate.Value.TimeOfDay == new TimeSpan())
+                        {
+                            @DateOnly.FromDateTime(item.DueDate.Value)
+                        }
+                        else
+                        {
+                            @item.DueDate.Value
+                        }
+                    }
                 </td>
                 <td class="d-inline-flex">
                     <div class="btn-group">
