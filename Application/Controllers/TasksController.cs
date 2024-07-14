@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Application.Data;
 using Application.Models;
+using Application.Scripts;
 
 namespace Application.Controllers
 {
@@ -43,13 +44,22 @@ namespace Application.Controllers
                 return NotFound();
             }
 
+            if (toDoItem.DueDate.HasValue)
+            {
+                ViewData["DueTime"] = TimeOnly.FromDateTime(toDoItem.DueDate.Value);
+            }
+
+            ViewData["Priorities"] = SelectListModifier.InsertSelectItems(
+                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет");
+
             return View(toDoItem);
         }
 
         [Route("create")]
         public IActionResult Create()
         {
-            ViewData["Priorities"] = new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level");
+            ViewData["Priorities"] = SelectListModifier.InsertSelectItems(
+                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет");
 
             return View();
         }
@@ -63,13 +73,15 @@ namespace Application.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (toDoItem.DueDate is not null)
+                if (toDoItem.DueDate.HasValue)
                 {
-                    if (dueTime is not null)
+                    if (dueTime.HasValue)
                         toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(toDoItem.DueDate.Value), dueTime.Value, DateTimeKind.Utc);
                     else
                         toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(toDoItem.DueDate.Value), new TimeOnly(), DateTimeKind.Utc);
                 }
+                else if (dueTime.HasValue)
+                    toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(DateTime.Now), dueTime.Value, DateTimeKind.Utc);
 
                 _context.Add(toDoItem);
                 await _context.SaveChangesAsync();
@@ -96,6 +108,17 @@ namespace Application.Controllers
             {
                 return NotFound();
             }
+
+            if (toDoItem.DueDate.HasValue)
+            {
+                ViewData["DueTime"] = TimeOnly.FromDateTime(toDoItem.DueDate.Value);
+            }
+
+            ViewData["Priorities"] = SelectListModifier.InsertSelectItems(
+                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет");
+
+            ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
+
             return View(toDoItem);
         }
 
@@ -104,7 +127,7 @@ namespace Application.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromQuery] int id, [Bind("Id,Title,Description,IsCompleted,DueDate")] ToDoItem toDoItem)
+        public async Task<IActionResult> Edit([FromForm] int id, [FromForm] TimeOnly? dueTime, [Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem toDoItem)
         {
             if (id != toDoItem.Id)
             {
@@ -113,6 +136,16 @@ namespace Application.Controllers
 
             if (ModelState.IsValid)
             {
+                if (toDoItem.DueDate.HasValue)
+                {
+                    if (dueTime.HasValue)
+                        toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(toDoItem.DueDate.Value), dueTime.Value, DateTimeKind.Utc);
+                    else
+                        toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(toDoItem.DueDate.Value), new TimeOnly(), DateTimeKind.Utc);
+                }
+                else if (dueTime.HasValue)
+                    toDoItem.DueDate = new DateTime(DateOnly.FromDateTime(DateTime.Now), dueTime.Value, DateTimeKind.Utc);
+
                 try
                 {
                     _context.Update(toDoItem);
@@ -148,6 +181,8 @@ namespace Application.Controllers
             {
                 return NotFound();
             }
+
+            ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
             return View(toDoItem);
         }

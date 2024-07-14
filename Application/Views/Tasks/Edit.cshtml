@@ -1,49 +1,84 @@
 ﻿@model Application.Models.ToDoItem
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактирование задачи";
 }
 
-<h1>Edit</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Главная</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Задачи ToDo</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Редактирование задачи</li>
+    </ol>
+</nav>
 
-<h4>ToDoItem</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+<h1>Редактирование задачи</h1>
+<p class="text-muted">Измените существующую задачу ToDo</p>
+
+<form asp-action="Edit">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <div class="row mb-2 gy-2">
+        <div class="col-12 col-xl-6">
+            <div class="row mb-2 gy-2">
+                <div class="col">
+                    <div class="form-floating">
+                        <input asp-for="Title" class="form-control" placeholder="Название задачи" />
+                        <label asp-for="Title">Название задачи</label>
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+            <div class="row mb-2 gy-2">
+                <div class="col">
+                    <div class="form-floating">
+                        <input asp-for="DueDate" type="date" class="form-control" placeholder="Срок выполнения" />
+                        <label asp-for="DueDate">Срок выполнения</label>
+                        <span asp-validation-for="DueDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating">
+                        <input name="DueTime" type="time" class="form-control" placeholder="Срок выполнения (время)" value="@ViewData["DueTime"]" />
+                        <label name="DueTime">Срок выполнения (время)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2 gy-2">
+                <div class="col">
+                    <div class="form-floating">
+                        <select asp-for="Priority" asp-items="ViewBag.Priorities" class="form-select"></select>
+                        <label asp-for="Priority">Приоритет задачи</label>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="form-floating">
+                <textarea asp-for="Description" class="form-control" style="height: calc((3.5rem + .5rem) * 3); min-height: calc((3.5rem + .5rem) * 3);" placeholder="Описание задачи"></textarea>
+                <label asp-for="Description">Описание задачи</label>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsCompleted" /> @Html.DisplayNameFor(model => model.IsCompleted)
-                </label>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="form-switch">
+                <input class="form-check-input" asp-for="IsCompleted" />
+                <label asp-for="IsCompleted">Отметить как выполненое</label>
+                <span asp-validation-for="IsCompleted" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="DueDate" class="control-label"></label>
-                <input asp-for="DueDate" class="form-control" />
-                <span asp-validation-for="DueDate" class="text-danger"></span>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="float-end">
+                <a href="@ViewData["PreviousPage"]" class="btn btn-outline-secondary px-4">Назад</a>
+                <input type="submit" value="Сохранить" class="btn btn-primary px-5" />
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

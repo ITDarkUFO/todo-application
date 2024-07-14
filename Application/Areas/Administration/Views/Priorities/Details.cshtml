@@ -55,7 +55,7 @@
     <div class="col-12 col-xl-6">
         <div class="float-end">
             <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
-            <a asp-action="Edit" class="btn btn-primary px-4" >Редактировать приоритет</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4" >Редактировать приоритет</a>
         </div>
     </div>
 </div>

@@ -71,6 +71,9 @@ namespace Application.Areas.Administration.Controllers
             {
                 return NotFound();
             }
+
+            ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
+
             return View(priority);
         }
 
@@ -150,6 +153,8 @@ namespace Application.Areas.Administration.Controllers
             {
                 return NotFound();
             }
+
+            ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
             return View(priority);
         }
