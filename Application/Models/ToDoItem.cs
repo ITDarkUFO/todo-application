@@ -14,7 +14,7 @@
 
         public int? Priority { get; set; }
 
-        public int User { get; set; }
+        public string User { get; set; } = null!;
 
         public virtual Priority? PriorityNavigation { get; set; }
 

@@ -1,0 +1,60 @@
+﻿@model Application.Models.User
+
+@{
+    ViewData["Title"] = "Добавление пользователя";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-area="Administration" asp-controller="Home" asp-action="Index">Админ-панель</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Пользователи</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Добавление пользователя</li>
+    </ol>
+</nav>
+
+<h1>Добавление пользователя</h1>
+<p class="text-muted">Добавьте нового пользователя</p>
+
+<form asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row mb-2">
+        <div class="col-12 col-xl-6">
+            <div class="form-floating">
+                <input asp-for="UserName" class="form-control" placeholder="Ваше имя" />
+                <label asp-for="UserName">Ваше имя</label>
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-12 col-xl-6">
+            <div class="form-floating">
+                <input asp-for="Email" class="form-control" placeholder="Введите почту" />
+                <label asp-for="Email">Введите почту</label>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-12 col-xl-6">
+            <div class="form-floating">
+                <input name="password" class="form-control" placeholder="Введите почту" />
+                <label for="password">Введите пароль</label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-xl-6">
+            <div class="float-end">
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
+                <input type="submit" value="Добавить" class="btn btn-primary px-5" />
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

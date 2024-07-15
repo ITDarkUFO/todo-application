@@ -1,10 +1,11 @@
 ﻿using Application.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         private readonly IConfiguration _configuration;
 
@@ -22,7 +23,7 @@ namespace Application.Data
 
         public DbSet<ToDoItem> ToDoItems { get; set; }
 
-        public DbSet<User> Users { get; set; }
+        //public override DbSet<User> Users { get { return base.Users; } set { base.Users = value; } }
 
         public DbSet<Priority> Priorities { get; set; }
 
@@ -43,7 +44,7 @@ namespace Application.Data
                 entity.ToTable("user");
                 entity.HasKey(e => e.Id).HasName("user_pkey");
 
-                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
             });
 
             builder.Entity<Priority>(entity =>

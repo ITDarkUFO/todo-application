@@ -1,6 +1,23 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<User> SignInManager
+@{
     ViewData["Title"] = "Home Page";
 }
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Главная</li>
+        </ol>
+    </nav>
+}
+else
+{
+    
+}
+
+
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>

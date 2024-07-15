@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Application.Data;
 using Application.Models;
-using Npgsql;
 
 namespace Application.Areas.Administration.Controllers
 {

@@ -8,18 +8,23 @@ using Microsoft.EntityFrameworkCore;
 using Application.Data;
 using Application.Models;
 using Application.Scripts;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace Application.Controllers
 {
+    [Authorize]
     [Route("tasks")]
-    public class TasksController(ApplicationDbContext context) : Controller
+    public class TasksController(ApplicationDbContext context, UserManager<User> userManager) : Controller
     {
         private readonly ApplicationDbContext _context = context;
+        private readonly UserManager<User> _userManager = userManager;
 
         [Route("")]
         public async Task<IActionResult> Index()
         {
-            var tasks = await _context.ToDoItems.ToListAsync();
+            var tasks = await _context.ToDoItems.Where(i => i.User == _userManager.GetUserId(User)).ToListAsync();
 
             foreach (var task in tasks)
             {
@@ -40,6 +45,11 @@ namespace Application.Controllers
             var toDoItem = await _context.ToDoItems
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (toDoItem == null)
+            {
+                return NotFound();
+            }
+            
+            if (toDoItem.User != _userManager.GetUserId(User))
             {
                 return NotFound();
             }
@@ -90,8 +100,6 @@ namespace Application.Controllers
 
             ViewData["Priorities"] = new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level");
 
-            ViewData["Users"] = new SelectList(_context.Users, "Id", "Name");
-
             return View(toDoItem);
         }
 
@@ -105,6 +113,11 @@ namespace Application.Controllers
 
             var toDoItem = await _context.ToDoItems.FindAsync(id);
             if (toDoItem == null)
+            {
+                return NotFound();
+            }
+
+            if (toDoItem.User != _userManager.GetUserId(User))
             {
                 return NotFound();
             }
@@ -130,6 +143,11 @@ namespace Application.Controllers
         public async Task<IActionResult> Edit([FromForm] int id, [FromForm] TimeOnly? dueTime, [Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem toDoItem)
         {
             if (id != toDoItem.Id)
+            {
+                return NotFound();
+            }
+
+            if (toDoItem.User != _userManager.GetUserId(User))
             {
                 return NotFound();
             }
@@ -182,6 +200,11 @@ namespace Application.Controllers
                 return NotFound();
             }
 
+            if (toDoItem.User != _userManager.GetUserId(User))
+            {
+                return NotFound();
+            }
+
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
             return View(toDoItem);
@@ -193,8 +216,14 @@ namespace Application.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var toDoItem = await _context.ToDoItems.FindAsync(id);
+
             if (toDoItem != null)
             {
+                if (toDoItem.User != _userManager.GetUserId(User))
+                {
+                    return NotFound();
+                }
+
                 _context.ToDoItems.Remove(toDoItem);
             }
 

@@ -1,11 +1,9 @@
-﻿namespace Application.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace Application.Models
 {
-    public class User
+    public class User : IdentityUser
     {
-        public int Id { get; set; }
-
-        public string Name { get; set; } = null!;
-
         public List<ToDoItem>? ToDoItems { get; set; } = default;
     }
 }
