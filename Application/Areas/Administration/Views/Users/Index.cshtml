@@ -13,17 +13,17 @@
 
 <div class="d-inline-flex align-items-center">
     <h1><span>Пользователи</span><span class="text-muted fw-normal mx-2">(@Model.Count())</span></h1>
-    <a class="btn btn-primary px-4 mx-3" asp-action="Create">&plus; Добавить приоритет</a>
+    <a class="btn btn-primary px-4 mx-3" asp-action="Create">&plus; Добавить пользователя</a>
 </div>
 <p class="text-muted">Добавляйте новых пользователей, изменяйте их информацию или удаляйте</p>
 
 <table class="table">
     <thead>
         <tr>
-            <th class="col">Имя пользователя</th>
-            <th class="col">Email</th>
-            <th class="col">Номер телефона</th>
-            <th class="col"></th>
+            <th class="col-2">Имя пользователя</th>
+            <th class="col-2">Email</th>
+            <th class="col-2">Номер телефона</th>
+            <th class="col-2"></th>
         </tr>
     </thead>
     <tbody>
@@ -39,7 +39,13 @@
                 <td>
                     @Html.DisplayFor(modelItem => user.PhoneNumber)
                 </td>
-                <td></td>
+                <td class="d-inline-flex">
+                    <div class="btn-group">
+                        <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-primary">Редактировать</a>
+                        <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-outline-primary">Подробнее</a>
+                        <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-outline-danger">Удалить</a>
+                    </div>
+                </td>
             </tr>
         }
     </tbody>

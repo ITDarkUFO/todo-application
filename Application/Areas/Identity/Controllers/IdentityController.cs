@@ -36,22 +36,30 @@ namespace Application.Areas.Identity.Controllers
                 ModelState.AddModelError("UserName", "Введите имя пользователя");
             }
 
+            if (await _userManager.FindByEmailAsync(user.Email!.Normalize().ToUpperInvariant()) is not null)
+            {
+                ModelState.AddModelError("Email", "Почта уже зарегистрирована");
+            }
+            if (await _userManager.FindByNameAsync(user.UserName!.Normalize().ToUpperInvariant()) is not null)
+            {
+                ModelState.AddModelError("UserName", "Это имя уже занято");
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                ModelState.AddModelError("", "Введите пароль");
+            }
+
             if (ModelState.IsValid)
             {
-                if ((await _userManager.FindByEmailAsync(user.Email!.Normalize().ToUpperInvariant())) is null)
-                {
-                    user.NormalizedEmail = user.Email.Normalize().ToUpperInvariant();
-                    user.NormalizedUserName = user.UserName!.Normalize().ToUpperInvariant();
-                    user.PasswordHash = _passwordHasher.HashPassword(user, password);
-                    await _userManager.CreateAsync(user);
-                    await _signInManager.SignInAsync(user, false);
+                user.NormalizedEmail = user.Email.Normalize().ToUpperInvariant();
+                user.NormalizedUserName = user.UserName!.Normalize().ToUpperInvariant();
+                user.PasswordHash = _passwordHasher.HashPassword(user, password);
 
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    ModelState.AddModelError("Email", "Почта уже зарегистрирована");
-                }
+                await _userManager.CreateAsync(user);
+                await _signInManager.SignInAsync(user, false);
+
+                return RedirectToAction("Index", "Home");
             }
 
             return View(user);

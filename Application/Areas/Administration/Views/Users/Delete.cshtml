@@ -1,0 +1,44 @@
+﻿@model Application.Models.User
+
+@{
+    ViewData["Title"] = "Удаление пользователя";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-area="Administration" asp-controller="Home" asp-action="Index">Админ-панель</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Пользователи</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Удаление пользователя</li>
+    </ol>
+</nav>
+
+<h1>Удаление пользователя</h1>
+<p class="text-muted">Удалите пользователя (также будут удалены все назначенные ему задачи)</p>
+
+<div class="row mb-2">
+    <div class="col-12 col-xl-6">
+        <div class="form-floating">
+            <input asp-for="UserName" readonly class="form-control" placeholder="Имя пользователя" />
+            <label asp-for="UserName">Имя пользователя</label>
+        </div>
+    </div>
+</div>
+<div class="row mb-2">
+    <div class="col-12 col-xl-6">
+        <div class="form-floating">
+            <input asp-for="Email" readonly class="form-control" placeholder="Введите почту" />
+            <label asp-for="Email">Введите почту</label>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-xl-6 d-flex justify-content-between">
+        <span class="text-danger col">Вы уверены, что хотите удалить данного пользователя?</span>
+        <form asp-action="Delete" class="d-inline-block col-auto">
+            <input type="hidden" asp-for="Id" />
+            <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
+            <input type="submit" value="Удалить" class="btn btn-danger px-5" />
+        </form>
+    </div>
+</div>
