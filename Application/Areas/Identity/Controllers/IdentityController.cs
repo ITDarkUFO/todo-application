@@ -14,6 +14,48 @@ namespace Application.Areas.Identity.Controllers
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly SignInManager<User> _signInManager = signInManager;
+        private readonly PasswordHasher<User> _passwordHasher = new();
+
+        [Route("register")]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [Route("register")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register([FromForm] string password, [Bind("UserName,Email,PhoneNumber")] User user)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                ModelState.AddModelError("Email", "Введите почтовый адрес");
+            }
+            if (string.IsNullOrEmpty(user.UserName))
+            {
+                ModelState.AddModelError("UserName", "Введите имя пользователя");
+            }
+
+            if (ModelState.IsValid)
+            {
+                if ((await _userManager.FindByEmailAsync(user.Email!.Normalize().ToUpperInvariant())) is null)
+                {
+                    user.NormalizedEmail = user.Email.Normalize().ToUpperInvariant();
+                    user.NormalizedUserName = user.UserName!.Normalize().ToUpperInvariant();
+                    user.PasswordHash = _passwordHasher.HashPassword(user, password);
+                    await _userManager.CreateAsync(user);
+                    await _signInManager.SignInAsync(user, false);
+
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError("Email", "Почта уже зарегистрирована");
+                }
+            }
+
+            return View(user);
+        }
 
         [Route("login")]
         public IActionResult Login(string? returnUrl = null)
@@ -42,7 +84,7 @@ namespace Application.Areas.Identity.Controllers
 
                     if (result.Succeeded)
                     {
-                        if (returnUrl.IsNullOrEmpty() && Url.IsLocalUrl(returnUrl))
+                        if (!returnUrl.IsNullOrEmpty() && Url.IsLocalUrl(returnUrl))
                         {
                             return Redirect(returnUrl);
                         }
