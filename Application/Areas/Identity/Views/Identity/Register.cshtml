@@ -1,4 +1,4 @@
-﻿@model Application.Models.User
+﻿@model Application.Areas.Identity.Models.UserRegistrationDto
 
 @{
     ViewData["Title"] = "Регистрация";
@@ -12,8 +12,8 @@
     <div class="row mb-2">
         <div class="col-12 col-xl-6 m-auto">
             <div class="form-floating">
-                <input asp-for="UserName" class="form-control" placeholder="Имя пользователя" />
-                <label asp-for="UserName">Имя пользователя</label>
+                <input asp-for="UserName" type="text" class="form-control" placeholder="Имя пользователя" autocomplete="username" aria-required="true" />
+                <label asp-for="UserName">Имя пользователя <span class="text-danger">*</span></label>
                 <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
         </div>
@@ -21,30 +21,42 @@
     <div class="row mb-2">
         <div class="col-12 col-xl-6 m-auto">
             <div class="form-floating">
-                <input asp-for="Email" class="form-control" placeholder="Почта" />
-                <label asp-for="Email">Почта</label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Почта" autocomplete="email" aria-required="true" />
+                <label asp-for="Email">Почта <span class="text-danger">*</span></label>
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
         </div>
     </div>
     <div class="row mb-2">
         <div class="col-12 col-xl-6 m-auto">
-            <div class="form-floating">
-                <input name="password" required class="form-control" placeholder="Пароль" type="password" />
-                <label for="password">Пароль</label>
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-floating">
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Пароль" aria-required="true" autocomplete="password" />
+                        <label asp-for="Password">Пароль <span class="text-danger">*</span></label>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-floating">
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Подтверждение пароля" aria-required="true" />
+                        <label asp-for="ConfirmPassword">Подтверждение пароля <span class="text-danger">*</span></label>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="row mb-2">
         <div class="col-12 col-xl-6 m-auto">
-            <div class="float-end">
-                <input type="submit" value="Зарегистрироваться" class="btn btn-primary px-5" />
-            </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-xl-6 m-auto">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="float-end">
+                <input type="submit" value="Зарегистрироваться" class="btn btn-primary px-5" />
+            </div>
         </div>
     </div>
 </form>

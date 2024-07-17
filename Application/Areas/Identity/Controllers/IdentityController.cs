@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Application.Data;
+﻿using Application.Areas.Identity.Models;
 using Application.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.RegularExpressions;
 
 namespace Application.Areas.Identity.Controllers
 {
+    [AllowAnonymous]
     [Area("Identity")]
     [Route("account")]
-    public class IdentityController(UserManager<User> userManager, SignInManager<User> signInManager) : Controller
+    public partial class IdentityController(UserManager<User> userManager, SignInManager<User> signInManager) : Controller
     {
+        [GeneratedRegex("^[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$")]
+        private static partial Regex emailRegex();
+
         private readonly UserManager<User> _userManager = userManager;
         private readonly SignInManager<User> _signInManager = signInManager;
         private readonly PasswordHasher<User> _passwordHasher = new();
@@ -19,100 +23,89 @@ namespace Application.Areas.Identity.Controllers
         [Route("register")]
         public IActionResult Register()
         {
-            return View();
+            UserRegistrationDto model = new();
+            return View(model);
         }
 
         [Route("register")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register([FromForm] string password, [Bind("UserName,Email,PhoneNumber")] User user)
+        public async Task<IActionResult> Register(UserRegistrationDto request)
         {
-            if (string.IsNullOrEmpty(user.Email))
-            {
-                ModelState.AddModelError("Email", "Введите почтовый адрес");
-            }
-            if (string.IsNullOrEmpty(user.UserName))
-            {
-                ModelState.AddModelError("UserName", "Введите имя пользователя");
-            }
+            if (!emailRegex().IsMatch(request.Email))
+                ModelState.AddModelError("Email", "Некорректный адрес электронной почты");
 
-            if (await _userManager.FindByEmailAsync(user.Email!.Normalize().ToUpperInvariant()) is not null)
-            {
-                ModelState.AddModelError("Email", "Почта уже зарегистрирована");
-            }
-            if (await _userManager.FindByNameAsync(user.UserName!.Normalize().ToUpperInvariant()) is not null)
-            {
-                ModelState.AddModelError("UserName", "Это имя уже занято");
-            }
+            if (await _userManager.FindByEmailAsync(request.Email) is not null)
+                ModelState.AddModelError("Email", "Почта уже используется");
 
-            if (string.IsNullOrEmpty(password))
-            {
-                ModelState.AddModelError("", "Введите пароль");
-            }
+            if (await _userManager.FindByNameAsync(request.UserName) is not null)
+                ModelState.AddModelError("UserName", "Данное имя уже занято");
+
+            if (request.Password != request.ConfirmPassword)
+                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
 
             if (ModelState.IsValid)
             {
-                user.NormalizedEmail = user.Email.Normalize().ToUpperInvariant();
-                user.NormalizedUserName = user.UserName!.Normalize().ToUpperInvariant();
-                user.PasswordHash = _passwordHasher.HashPassword(user, password);
+                User newUser = new()
+                {
+                    Email = request.Email,
+                    NormalizedEmail = request.Email.Normalize().ToUpperInvariant(),
+                    UserName = request.UserName,
+                    NormalizedUserName = request.UserName.Normalize().ToUpperInvariant()
+                };
 
-                await _userManager.CreateAsync(user);
-                await _signInManager.SignInAsync(user, false);
+                newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
+
+                await _userManager.CreateAsync(newUser);
+                await _signInManager.SignInAsync(newUser, false);
 
                 return RedirectToAction("Index", "Home");
             }
 
-            return View(user);
+            return View(request);
         }
 
         [Route("login")]
-        public IActionResult Login(string? returnUrl = null)
+        public IActionResult Login([FromQuery] string? returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
+            TempData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [Route("login")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([FromForm] string? returnUrl, [FromForm] string password, [Bind("Email")] User user)
+        public async Task<IActionResult> Login(UserLoginDto request)
         {
-            if (string.IsNullOrEmpty(user.Email))
-            {
-                ModelState.AddModelError("Email", "Введите почтовый адрес");
-            }
+            string? returnUrl = TempData["ReturnUrl"] as string;
+
+            User? user = await _userManager.FindByNameAsync(request.UserName);
+
+            if (user is null)
+                ModelState.AddModelError("UserName", "Данный пользователь не найден");
 
             if (ModelState.IsValid)
             {
-                var userCredentials = await _userManager.FindByEmailAsync(user.Email!.Normalize().ToUpperInvariant());
+                await _signInManager.PasswordSignInAsync(user!, request.Password, request.RememberMe, false);
 
-                if (userCredentials is not null)
+                if (_signInManager.IsSignedIn(User))
                 {
-                    var result = await _signInManager.PasswordSignInAsync(userCredentials, password, false, false);
-
-                    if (result.Succeeded)
+                    if (!returnUrl.IsNullOrEmpty() && Url.IsLocalUrl(returnUrl))
                     {
-                        if (!returnUrl.IsNullOrEmpty() && Url.IsLocalUrl(returnUrl))
-                        {
-                            return Redirect(returnUrl);
-                        }
-                        else
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
+                        return Redirect(returnUrl);
                     }
                     else
                     {
-                        ModelState.AddModelError("", "Неверный пароль");
+                        return RedirectToAction("Index", "Home");
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Указанный пользователь не найден");
+                    ModelState.AddModelError("Password", "Неправильный пароль");
                 }
             }
 
-            return View(user);
+            return View(request);
         }
 
         [Route("logout")]

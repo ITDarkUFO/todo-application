@@ -1,15 +1,20 @@
-﻿using Application.Data;
+﻿using Application.Areas.Identity.Models;
+using Application.Data;
 using Application.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace Application.Areas.Administration.Controllers
 {
     [Area("Administration")]
     [Route("admin/users")]
-    public class UsersController(ApplicationDbContext context, UserManager<User> userManager, SignInManager<User> signInManager) : Controller
+    public partial class UsersController(ApplicationDbContext context, UserManager<User> userManager, SignInManager<User> signInManager) : Controller
     {
+        [GeneratedRegex("^[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$")]
+        private static partial Regex emailRegex();
+
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<User> _userManager = userManager;
         private readonly SignInManager<User> _signInManager = signInManager;
@@ -26,49 +31,45 @@ namespace Application.Areas.Administration.Controllers
         [Route("create")]
         public IActionResult Create()
         {
-            return View();
+            UserRegistrationDto model = new();
+            return View(model);
         }
 
         [Route("create")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromForm] string password, [Bind("UserName,Email,PhoneNumber")] User user)
+        public async Task<IActionResult> Create(UserRegistrationDto request)
         {
-            if (string.IsNullOrEmpty(user.Email))
-            {
-                ModelState.AddModelError("Email", "Введите почтовый адрес");
-            }
-            if (string.IsNullOrEmpty(user.UserName))
-            {
-                ModelState.AddModelError("UserName", "Введите имя пользователя");
-            }
+            if (!emailRegex().IsMatch(request.Email))
+                ModelState.AddModelError("Email", "Некорректный адрес электронной почты");
 
-            if (await _userManager.FindByEmailAsync(user.Email!.Normalize().ToUpperInvariant()) is null)
-            {
-                ModelState.AddModelError("Email", "Почта уже зарегистрирована");
-            }
-            if (await _userManager.FindByNameAsync(user.UserName!.Normalize().ToUpperInvariant()) is null)
-            {
-                ModelState.AddModelError("UserName", "Это имя уже занято");
-            }
+            if (await _userManager.FindByEmailAsync(request.Email) is not null)
+                ModelState.AddModelError("Email", "Почта уже используется");
 
-            if (string.IsNullOrEmpty(password))
-            {
-                ModelState.AddModelError("", "Введите пароль");
-            }
+            if (await _userManager.FindByNameAsync(request.UserName) is not null)
+                ModelState.AddModelError("UserName", "Данное имя уже занято");
+
+            if (request.Password != request.ConfirmPassword)
+                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
 
             if (ModelState.IsValid)
             {
-                user.NormalizedEmail = user.Email!.Normalize().ToUpperInvariant();
-                user.NormalizedUserName = user.UserName!.Normalize().ToUpperInvariant();
-                user.PasswordHash = _passwordHasher.HashPassword(user, password);
+                User newUser = new()
+                {
+                    Email = request.Email,
+                    NormalizedEmail = request.Email.Normalize().ToUpperInvariant(),
+                    UserName = request.UserName,
+                    NormalizedUserName = request.UserName.Normalize().ToUpperInvariant()
+                };
 
-                await _userManager.CreateAsync(user);
+                newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
+
+                await _userManager.CreateAsync(newUser);
 
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(user);
+            return View(request);
         }
 
         [Route("delete")]

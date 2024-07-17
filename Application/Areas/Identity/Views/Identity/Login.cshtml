@@ -1,4 +1,4 @@
-﻿@model Application.Models.User
+﻿@model Application.Areas.Identity.Models.UserLoginDto
 
 @{
     ViewData["Title"] = "Вход в систему";
@@ -9,22 +9,30 @@
 </div>
 
 <form asp-action="Login" method="post">
-    <input hidden name="returnUrl" value="@ViewData["ReturnUrl"]" />
-
     <div class="row mb-2">
         <div class="col-12 col-xl-6 m-auto">
             <div class="form-floating">
-                <input asp-for="Email" class="form-control" placeholder="Почта" />
-                <label asp-for="Email">Почта</label>
-                <span asp-validation-for="Email" class="text-danger"></span>
+                <input asp-for="UserName" class="form-control" placeholder="Имя пользователя" aria-required="true" />
+                <label asp-for="UserName">Имя пользователя <span class="text-danger">*</span></label>
+                <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
         </div>
     </div>
     <div class="row mb-2">
         <div class="col-12 col-xl-6 m-auto">
             <div class="form-floating">
-                <input name="password" class="form-control" placeholder="Пароль" type="password" />
-                <label for="password">Пароль</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Пароль" aria-required="true" />
+                <label asp-for="Password">Пароль <span class="text-danger">*</span></label>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-12 col-xl-6 m-auto">
+            <div class="form-check form-switch">
+                <input asp-for="RememberMe" type="checkbox" class="form-check-input" placeholder="Запомнить меня" />
+                <label asp-for="RememberMe" class="form-check-label">Запомнить меня</label>
+                <span asp-validation-for="RememberMe" class="text-danger"></span>
             </div>
         </div>
     </div>
