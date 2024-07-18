@@ -25,7 +25,31 @@ namespace Application.Areas.Administration.Controllers
         {
             var users = await _context.Users.ToListAsync();
 
+            foreach (var user in users)
+            {
+                user.ToDoItems = await _context.ToDoItems.Where(i => i.User == user.Id).ToListAsync();
+            }
+
             return View(users);
+        }
+
+        [Route("detais")]
+        public async Task<IActionResult> Details([FromQuery] string? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.ToDoItems = await _context.ToDoItems.Where(i => i.User == user.Id).ToListAsync();
+
+            return View(user);
         }
 
         [Route("create")]

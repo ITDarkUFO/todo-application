@@ -20,9 +20,9 @@
 <table class="table">
     <thead>
         <tr>
-            <th class="col-2">Имя пользователя</th>
-            <th class="col-2">Email</th>
-            <th class="col-2">Номер телефона</th>
+            <th class="col-3">Имя пользователя</th>
+            <th class="col-3">Email</th>
+            <th class="col">Количество задач</th>
             <th class="col-2"></th>
         </tr>
     </thead>
@@ -37,7 +37,10 @@
                     @Html.DisplayFor(modelItem => user.Email)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => user.PhoneNumber)
+                    @if (user.ToDoItems is not null)
+                    {
+                        <span>@user.ToDoItems.Count() задач</span>
+                    }
                 </td>
                 <td class="d-inline-flex">
                     <div class="btn-group">

@@ -29,6 +29,25 @@ namespace Application.Areas.Administration.Controllers
             return View(priorities);
         }
 
+        [Route("details")]
+        public async Task<IActionResult> Details([FromQuery] int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var priority = await _context.Priorities.FindAsync(id);
+            if (priority == null)
+            {
+                return NotFound();
+            }
+
+            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
+
+            return View(priority);
+        }
+
         [Route("create")]
         public IActionResult Create()
         {
@@ -115,25 +134,6 @@ namespace Application.Areas.Administration.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(priority);
-        }
-
-        [Route("details")]
-        public async Task<IActionResult> Details([FromQuery] int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var priority = await _context.Priorities.FindAsync(id);
-            if (priority == null)
-            {
-                return NotFound();
-            }
-
-            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
 
             return View(priority);
         }
