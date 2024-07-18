@@ -20,3 +20,12 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.card {
+    height: 100%;
+}
+
+    .card .btn {
+        display: inline-block;
+        margin-top: auto;
+    }
