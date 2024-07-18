@@ -15,47 +15,51 @@
 <h1>Детали приоритета</h1>
 <p class="text-muted">Посмотрите информацию о приоритете и настроенных на него задачах</p>
 
-<div class="row mb-2">
+<div class="row mb-4">
     <div class="col-12 col-xl-6">
-        <div>
-            <label asp-for="Level" class="form-label">Уровень приоритета</label>
+        <div class="form-floating mb-2">
             <input asp-for="Level" readonly class="form-control" placeholder="Уровень приоритета" />
+            <label asp-for="Level" class="form-label">Уровень приоритета</label>
         </div>
-    </div>
-</div>
-
-<div class="row mb-2">
-    <div class="col-12 col-xl-6">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="col-3">Номер задачи</th>
-                    <th class="col-8">Название задачи</th>
-                    <th class="col-3"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.ToDoItems is not null)
-                {
-                    foreach (var task in Model.ToDoItems)
-                    {
-                        <tr>
-                            <th>@task.Id</th>
-                            <td>@task.Title</td>
-                            <td><a asp-area="" asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-primary">Подробнее</a></td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12 col-xl-6">
         <div class="float-end">
             <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4" >Редактировать приоритет</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Редактировать</a>
         </div>
+    </div>
+</div>
+
+<div class="row mb-2">
+    <div class="col-12 col-xl-6">
+        @if (Model.ToDoItems is not null)
+        {
+            @if (Model.ToDoItems.Count != 0)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col-3">Номер задачи</th>
+                            <th class="col-8">Название задачи</th>
+                            <th class="col-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var task in Model.ToDoItems)
+                        {
+                            <tr>
+                                <th>@task.Id</th>
+                                <td>@task.Title</td>
+                                <td class="text-end">
+                                    <a asp-area="" asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-primary">Подробнее</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <span class="text-muted">На этот приоритет не назначено задач</span>
+            }
+        }
     </div>
 </div>

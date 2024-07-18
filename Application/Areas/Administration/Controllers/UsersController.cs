@@ -49,6 +49,11 @@ namespace Application.Areas.Administration.Controllers
 
             user.ToDoItems = await _context.ToDoItems.Where(i => i.User == user.Id).ToListAsync();
 
+            foreach (var item in user.ToDoItems)
+            {
+                item.PriorityNavigation = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == item.Priority);
+            }
+
             return View(user);
         }
 

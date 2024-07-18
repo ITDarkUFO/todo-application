@@ -17,48 +17,44 @@
 </div>
 <p class="text-muted">Добавляйте и изменяйте задачи ToDo</p>
 
-<table class="table">
+<table class="table" style="table-layout: fixed;">
     <thead>
         <tr>
             <th class="col-1"></th>
             <th class="col-4">Название</th>
-            <th class="col-1">Приоритет</th>
             <th class="col-2">Срок выполнения</th>
-            <th class="col-2"></th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var task in Model)
         {
             <tr>
                 <td>
-                    <input asp-for="@item.IsCompleted" class="form-check-input" />
+                    <div class="form-switch">
+                        <input asp-for="@task.IsCompleted" class="form-check-input" />
+                    </div>
                 </td>
                 <th>
-                    @Html.DisplayFor(modelItem => item.Title)
+                    <div class="d-flex align-items-center">
+                        <div class="text-truncate" title="@task.Title">@task.Title</div>
+                        @if (task.PriorityNavigation is not null)
+                        {
+                            <span class="badge rounded-pill bg-secondary ms-1">@task.PriorityNavigation.Level уровень</span>
+                        }
+                    </div>
                 </th>
                 <td>
-                    @if (item.PriorityNavigation is not null)
-                        @item.PriorityNavigation!.Level
-                </td>
-                <td>
-                    @if (item.DueDate is not null)
+                    @if (task.DueDate.HasValue)
                     {
-                        if (item.DueDate.Value.TimeOfDay == new TimeSpan())
-                        {
-                            @DateOnly.FromDateTime(item.DueDate.Value)
-                        }
-                        else
-                        {
-                            @item.DueDate.Value
-                        }
+                        @task.DueDate.Value
                     }
                 </td>
-                <td class="d-inline-flex">
+                <td class="text-end">
                     <div class="btn-group">
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary">Редактировать</a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Подробнее</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger">Удалить</a>
+                        <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-outline-primary">Редактировать</a>
+                        <a asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-primary">Подробнее</a>
+                        <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-outline-danger">Удалить</a>
                     </div>
                 </td>
             </tr>

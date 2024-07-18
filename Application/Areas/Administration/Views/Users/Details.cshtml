@@ -15,25 +15,69 @@
 <h1>Информация о пользователе</h1>
 <p class="text-muted">Посмотрите информацию о пользователе и его задачах</p>
 
-<div class="row mb-2">
+<div class="row mb-4">
     <div class="col-12 col-xl-6">
-        <div class="form-floating">
+        <div class="form-floating mb-2">
             <input asp-for="UserName" readonly class="form-control" placeholder="Имя пользователя" />
             <label asp-for="UserName">Имя пользователя</label>
         </div>
-    </div>
-</div>
-<div class="row mb-2">
-    <div class="col-12 col-xl-6">
-        <div class="form-floating">
+        <div class="form-floating mb-2">
             <input asp-for="Email" readonly class="form-control" placeholder="Почта" />
             <label asp-for="Email">Почта</label>
         </div>
+        <div class="float-end">
+            <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-5">Редактировать</a>
+        </div>
     </div>
 </div>
+
 <div class="row">
-    <div class="col-12 col-xl-6 d-flex">
-        <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
-        <a asp-action="Edit" asp-route-id="" class="btn btn-primary px-5">Редактировать</a>
+    <div class="col-12 col-xl-6">
+        @if (Model.ToDoItems is not null)
+        {
+            @if (Model.ToDoItems.Count != 0)
+            {
+                <table class="table" style="table-layout: fixed;">
+                    <thead>
+                        <tr>
+                            <th class="col-1"></th>
+                            <th class="col-5">Название задачи</th>
+                            <th class="col-3">Срок выполнения</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var task in Model.ToDoItems)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="form-switch">
+                                        <input type="checkbox" class="form-check-input" asp-for="@task.IsCompleted" disabled readonly />
+                                    </div>
+                                </td>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <div class="text-truncate" title="@task.Title">@task.Title</div>
+                                        @if (task.PriorityNavigation is not null)
+                                        {
+                                            <span class="badge rounded-pill bg-secondary ms-1">@task.PriorityNavigation.Level уровень</span>
+                                        }
+                                    </div>
+                                </th>
+                                <td>@task.DueDate</td>
+                                <td class="text-end">
+                                    <a asp-area="" asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-primary">Подробнее</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <span class="text-muted">У пользователя нет задач</span>
+            }
+        }
     </div>
 </div>
