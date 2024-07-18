@@ -101,6 +101,90 @@ namespace Application.Areas.Administration.Controllers
             return View(request);
         }
 
+        [Route("edit")]
+        public async Task<IActionResult> Edit([FromQuery] string? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            UserEditDto userEdit = new()
+            {
+                Id = user.Id,
+                UserName = user.UserName!,
+                Email = user.Email!
+            };
+
+            ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
+
+            return View(userEdit);
+        }
+
+        [Route("edit")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit([FromForm] UserEditDto request)
+        {
+            User? user = await _userManager.FindByIdAsync(request.Id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (!emailRegex().IsMatch(request.Email))
+                ModelState.AddModelError("Email", "Некорректный адрес электронной почты");
+
+            if (await _userManager.FindByEmailAsync(request.Email) is not null
+                && !user.NormalizedEmail!.Equals(request.Email.Normalize(), StringComparison.InvariantCultureIgnoreCase))
+                ModelState.AddModelError("Email", "Почта уже используется");
+
+            if (await _userManager.FindByNameAsync(request.UserName) is not null
+                && !user.NormalizedUserName!.Equals(request.UserName.Normalize(), StringComparison.InvariantCultureIgnoreCase))
+                ModelState.AddModelError("UserName", "Данное имя уже занято");
+
+            if (request.Password != request.ConfirmPassword)
+                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
+
+            //if (request.Password != null && request.CurrentPassword == null)
+            //    ModelState.AddModelError("CurrentPassword", "Укажите текущий пароль");
+
+            //if (request.CurrentPassword != null && request.Password != null)
+            //    if (!await _userManager.CheckPasswordAsync(user, request.CurrentPassword))
+            //        ModelState.AddModelError("CurrentPassword", "Неверный пароль");
+
+            if (ModelState.IsValid)
+            {
+                // Токен должен отправиться по новой почте, но так как это тестовое задание, он используется напрямую
+                if (!user.NormalizedEmail!.Equals(request.Email.Normalize(), StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var changeEmailToken = await _userManager.GenerateChangeEmailTokenAsync(user, request.Email);
+                    await _userManager.ChangeEmailAsync(user, request.Email, changeEmailToken);
+                }
+
+                if (!user.NormalizedUserName!.Equals(request.UserName.Normalize(), StringComparison.InvariantCultureIgnoreCase))
+                    await _userManager.SetUserNameAsync(user, request.UserName);
+
+                if (request.Password != null)
+                {
+                    var changePasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    await _userManager.ResetPasswordAsync(user, changePasswordToken, request.Password);
+                    //await _userManager.ChangePasswordAsync(user, request.CurrentPassword!, request.Password);
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(request);
+        }
+
         [Route("delete")]
         public async Task<IActionResult> Delete([FromQuery] string? id)
         {
