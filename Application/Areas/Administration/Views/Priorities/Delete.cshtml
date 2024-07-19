@@ -29,7 +29,14 @@
         <span class="text-danger col">Вы уверены, что хотите удалить данный приоритет?</span>
         <form asp-action="Delete" class="d-inline-block col-auto">
             <input type="hidden" asp-for="Id" />
-            <a href="@ViewData["PreviousPage"]" class="btn btn-outline-secondary px-4">Назад</a>
+            @if (ViewData["PreviousPage"] as string != null)
+            {
+                <a href="@ViewData["PreviousPage"]" class="btn btn-outline-secondary px-4">Назад</a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
+            }
             <input type="submit" value="Удалить" class="btn btn-danger px-5" />
         </form>
     </div>

@@ -12,7 +12,7 @@
 
         public DateTime? DueDate { get; set; }
 
-        public int? Priority { get; set; }
+        public int Priority { get; set; } = 0;
 
         public string User { get; set; } = null!;
 

@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@model Application.Models.ToDoItem
 @inject SignInManager<User> SignInManager
 @{
     ViewData["Title"] = "Home Page";
@@ -11,15 +12,13 @@
             <li class="breadcrumb-item active">Главная</li>
         </ol>
     </nav>
+
+    <h1>Главная</h1>
 }
 else
 {
-    
+    <div class="text-center mt-5">
+        <h1 class="display-3">ToDo Application</h1>
+        <p class="text-muted">Пожалуйста войдите в систему, чтобы продолжить</p>
+    </div>
 }
-
-
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>

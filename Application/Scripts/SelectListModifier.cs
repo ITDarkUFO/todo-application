@@ -4,48 +4,53 @@ namespace Application.Scripts
 {
     public static class SelectListModifier
     {
-        public static List<SelectListItem> InsertPickItem(SelectList selectList, string pickItemName = "---Выбрать---", bool disabled = true)
+        public static List<SelectListItem> InsertPickItem(SelectList selectList, string pickItemName = "Выберите вариант", bool selected = true, bool disabled = true)
         {
             List<SelectListItem> list = [.. selectList];
-            return InsertPickItem(list, pickItemName, disabled);
+            return InsertPickItem(list, pickItemName, selected, disabled);
         }
 
-        public static List<SelectListItem> InsertPickItem(List<SelectListItem> list, string pickItemName = "---Выбрать---", bool disabled = true)
+        public static List<SelectListItem> InsertPickItem(List<SelectListItem> list, string pickItemName = "Выберите вариант", bool selected = true, bool disabled = true)
         {
-            list.Insert(0, new(pickItemName, null, true, disabled));
+            list.Insert(0, new(pickItemName, null, selected, disabled));
             return list;
         }
 
-        public static List<SelectListItem> InsertEmptyItem(SelectList selectList, string emptyItemName, int position)
+        public static List<SelectListItem> InsertSelectItem(SelectList selectList, int position, string itemName, string? itemValue = null,
+            bool selected = false, bool disabled = false)
         {
             List<SelectListItem> list = [.. selectList];
-            return InsertEmptyItem(list, emptyItemName, position);
+            return InsertSelectItem(list, position, itemName, itemValue, selected, disabled);
         }
 
-        public static List<SelectListItem> InsertEmptyItem(List<SelectListItem> list, string emptyItemName, int position)
+        public static List<SelectListItem> InsertSelectItem(List<SelectListItem> list, int position, string emptyItemName, string? itemValue = null,
+            bool selected = false, bool disabled = false)
         {
-            list.Insert(position, new(emptyItemName, ""));
+            if (itemValue is null)
+                list.Insert(position, new(emptyItemName, null, selected, disabled));
+            else
+                list.Insert(position, new(emptyItemName, itemValue, selected, disabled));
             return list;
         }
 
-        public static List<SelectListItem> InsertSelectItems(SelectList selectList, string emptyItemName, string pickItemName = "---Выбрать---")
+        public static List<SelectListItem> InsertInitialItems(SelectList selectList, string emptyItemName, string pickItemName = "Выберите вариант", string? emptyItemValue = null)
         {
             List<SelectListItem> list = [.. selectList];
             InsertPickItem(list, pickItemName);
-            InsertEmptyItem(list, emptyItemName, 1);
+            InsertSelectItem(list, 1, emptyItemName, emptyItemValue);
 
             return list;
         }
 
-        public static List<SelectListItem> CreateBooleanList(string emptyItemName)
+        public static List<SelectListItem> CreateBooleanList(string emptyItemName, string pickItemName = "Выберите вариант", string trueText = "True", string falseText = "False")
         {
             List<SelectListItem> list = [];
 
-            InsertPickItem(list);
-            InsertEmptyItem(list, emptyItemName, 1);
+            InsertPickItem(list, pickItemName);
+            InsertSelectItem(list, 1, emptyItemName);
 
-            list.Insert(2, new("True", "True"));
-            list.Insert(2, new("False", "False"));
+            list.Insert(2, new(trueText, "True"));
+            list.Insert(2, new(falseText, "False"));
 
             return list;
         }

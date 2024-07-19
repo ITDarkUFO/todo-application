@@ -1,18 +1,16 @@
-﻿using System;
-using System.ComponentModel;
-using Application.Data;
+﻿using Application.Data;
 using Application.Enums;
 using Application.Models;
 using Application.Scripts;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Controllers
+namespace Application.Areas.Administration.Controllers
 {
-    [Route("tasks")]
+    [Area("Administration")]
+    [Route("admin/tasks")]
     public class TasksController(ApplicationDbContext context, UserManager<User> userManager) : Controller
     {
         private readonly ApplicationDbContext _context = context;
@@ -33,6 +31,10 @@ namespace Application.Controllers
 
                     case TasksFilterEnum.Priority:
                         tasks = [.. tasks.OrderByDescending(t => t.Priority)];
+                        break;
+
+                    case TasksFilterEnum.User:
+                        tasks = [.. tasks.OrderBy(t => t.User)];
                         break;
                 }
             }
@@ -65,18 +67,13 @@ namespace Application.Controllers
             foreach (var task in tasks)
             {
                 task.PriorityNavigation = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == task.Priority);
+                task.UserNavigation = await _userManager.FindByIdAsync(task.User);
             }
 
             var priorities = SelectListModifier.InsertInitialItems(
                 new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Приоритет задачи", "-1");
 
             ViewData["Priorities"] = SelectListModifier.InsertSelectItem(priorities, 1, "Любой приоритет", "0");
-
-            //var taskFilters = EnumList.GetList<TasksFilterEnum>();
-            //taskFilters.Remove(TasksFilterEnum.User);
-
-            //ViewData["Sorters"] = SelectListModifier.InsertPickItem(EnumList.GetSelectList(taskFilters)!, "Сортировка задач", false);
-            //ViewData["Sorters"] = SelectListModifier.InsertPickItem(new SelectList(taskFilters, tasksFilter), "Сортировка задач", false);
 
             return View(tasks);
         }
@@ -89,24 +86,18 @@ namespace Application.Controllers
                 return NotFound();
             }
 
-            var task = await _context.ToDoItems.FirstOrDefaultAsync(m => m.Id == id);
+            var task = await _context.ToDoItems.FirstOrDefaultAsync(i => i.Id == id);
             if (task == null)
             {
                 return NotFound();
             }
 
-            if (task.User != _userManager.GetUserId(User))
-            {
-                return NotFound();
-            }
-
+            task.PriorityNavigation = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == task.Priority);
+            task.UserNavigation = await _userManager.FindByIdAsync(task.User);
             if (task.DueDate.HasValue)
             {
                 ViewData["DueTime"] = TimeOnly.FromDateTime(task.DueDate.Value);
             }
-
-            ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
             return View(task);
         }
@@ -117,6 +108,9 @@ namespace Application.Controllers
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
                 new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
+            ViewData["Users"] = SelectListModifier.InsertPickItem(
+                new SelectList(_userManager.Users.OrderBy(u => u.UserName), "Id", "UserName"), "Выберите пользователя");
+
             return View();
         }
 
@@ -125,6 +119,16 @@ namespace Application.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([FromForm] TimeOnly? dueTime, [Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem task)
         {
+            if (string.IsNullOrEmpty(task.Title))
+            {
+                ModelState.AddModelError("Title", "Обязательно для заполнения");
+            }
+
+            if (await _userManager.FindByIdAsync(task.User) is null)
+            {
+                ModelState.AddModelError("User", "Обязательно для заполнения");
+            }
+
             if (ModelState.IsValid)
             {
                 if (task.DueDate.HasValue)
@@ -145,6 +149,9 @@ namespace Application.Controllers
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
                 new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
+            ViewData["Users"] = SelectListModifier.InsertPickItem(
+                new SelectList(_userManager.Users.OrderBy(u => u.UserName), "Id", "UserName"), "Выберите пользователя");
+
             return View(task);
         }
 
@@ -156,28 +163,26 @@ namespace Application.Controllers
                 return NotFound();
             }
 
-            var task = await _context.ToDoItems.FirstOrDefaultAsync(i => i.Id == id);
-            if (task == null)
+            var item = await _context.ToDoItems.FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null)
             {
                 return NotFound();
             }
 
-            if (task.User != _userManager.GetUserId(User))
+            if (item.DueDate.HasValue)
             {
-                return NotFound();
-            }
-
-            if (task.DueDate.HasValue)
-            {
-                ViewData["DueTime"] = TimeOnly.FromDateTime(task.DueDate.Value);
+                ViewData["DueTime"] = TimeOnly.FromDateTime(item.DueDate.Value);
             }
 
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
                 new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
+            ViewData["Users"] = SelectListModifier.InsertPickItem(
+                new SelectList(_userManager.Users.OrderBy(u => u.UserName), "Id", "UserName"), "Выберите пользователя");
+
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
-            return View(task);
+            return View(item);
         }
 
         [Route("edit")]
@@ -185,9 +190,14 @@ namespace Application.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromForm] TimeOnly? dueTime, [Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem task)
         {
-            if (task.User != _userManager.GetUserId(User))
+            if (string.IsNullOrEmpty(task.Title))
             {
-                return NotFound();
+                ModelState.AddModelError("Title", "Обязательно для заполнения");
+            }
+
+            if (await _userManager.FindByIdAsync(task.User) is null)
+            {
+                ModelState.AddModelError("User", "Обязательно для заполнения");
             }
 
             if (ModelState.IsValid)
@@ -224,6 +234,9 @@ namespace Application.Controllers
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
                 new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
+            ViewData["Users"] = SelectListModifier.InsertPickItem(
+                new SelectList(_userManager.Users.OrderBy(u => u.UserName), "Id", "UserName"), "Выберите пользователя");
+
             return View(task);
         }
 
@@ -241,11 +254,6 @@ namespace Application.Controllers
                 return NotFound();
             }
 
-            if (task.User != _userManager.GetUserId(User))
-            {
-                return NotFound();
-            }
-
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
             return View(task);
@@ -258,13 +266,8 @@ namespace Application.Controllers
         {
             var task = await _context.ToDoItems.FirstOrDefaultAsync(i => i.Id == id);
 
-            if (task != null)
+            if (task is not null)
             {
-                if (task.User != _userManager.GetUserId(User))
-                {
-                    return NotFound();
-                }
-
                 _context.ToDoItems.Remove(task);
             }
 

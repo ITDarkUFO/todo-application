@@ -40,6 +40,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseStatusCodePages();
 
 app.UseRouting();
 

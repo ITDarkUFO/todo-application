@@ -162,9 +162,9 @@ namespace Application.Areas.Administration.Controllers
 
             if (ModelState.IsValid)
             {
-                // Токен должен отправиться по новой почте, но так как это тестовое задание, он используется напрямую
                 if (!user.NormalizedEmail!.Equals(request.Email.Normalize(), StringComparison.InvariantCultureIgnoreCase))
                 {
+                    // INFO: Токен должен отправляться на новую почту, но так как это тестовое задание, он используется напрямую
                     var changeEmailToken = await _userManager.GenerateChangeEmailTokenAsync(user, request.Email);
                     await _userManager.ChangeEmailAsync(user, request.Email, changeEmailToken);
                 }
@@ -174,9 +174,9 @@ namespace Application.Areas.Administration.Controllers
 
                 if (request.Password != null)
                 {
+                    // INFO: Токен должен отправиться на почту, но так как это тестовое задание, он используется напрямую
                     var changePasswordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                     await _userManager.ResetPasswordAsync(user, changePasswordToken, request.Password);
-                    //await _userManager.ChangePasswordAsync(user, request.CurrentPassword!, request.Password);
                 }
 
                 return RedirectToAction(nameof(Index));

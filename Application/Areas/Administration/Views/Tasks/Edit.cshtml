@@ -1,5 +1,4 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@inject UserManager<User> UserManager
 @model Application.Models.ToDoItem
 
 @{
@@ -8,7 +7,7 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Главная</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Админ-панель</a></li>
         <li class="breadcrumb-item"><a asp-action="Index">Задачи ToDo</a></li>
         <li class="breadcrumb-item active" aria-current="page">Редактирование задачи</li>
     </ol>
@@ -20,7 +19,6 @@
 <form asp-action="Edit">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="User" value="@UserManager.GetUserId(User)" />
     <div class="row mb-2 gy-2">
         <div class="col-12 col-xl-6">
             <div class="row mb-2 gy-2">
@@ -53,6 +51,13 @@
                         <select asp-for="Priority" asp-items="ViewBag.Priorities" class="form-select"></select>
                         <label asp-for="Priority">Приоритет задачи</label>
                         <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating">
+                        <select asp-for="User" asp-items="ViewBag.Users" class="form-select"></select>
+                        <label asp-for="User">Исполнитель</label>
+                        <span asp-validation-for="User" class="text-danger"></span>
                     </div>
                 </div>
             </div>

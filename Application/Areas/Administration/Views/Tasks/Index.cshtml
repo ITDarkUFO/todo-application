@@ -1,11 +1,12 @@
 ﻿@model IEnumerable<Application.Models.ToDoItem>
+
 @{
     ViewData["Title"] = "Задачи ToDo";
 }
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Главная</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Админ-панель</a></li>
         <li class="breadcrumb-item active">Задачи ToDo</li>
     </ol>
 </nav>
@@ -48,6 +49,7 @@
             <th class="col-1"></th>
             <th class="col-4">Название</th>
             <th class="col-2">Срок выполнения</th>
+            <th class="col-1">Исполнитель</th>
             <th></th>
         </tr>
     </thead>
@@ -73,6 +75,12 @@
                     @if (task.DueDate.HasValue)
                     {
                         @task.DueDate.Value
+                    }
+                </td>
+                <td>
+                    @if (task.UserNavigation is not null)
+                    {
+                        <a asp-controller="Users" asp-action="Details" asp-route-id="@task.User" class="link-primary">@task.UserNavigation.UserName</a>
                     }
                 </td>
                 <td class="text-end">

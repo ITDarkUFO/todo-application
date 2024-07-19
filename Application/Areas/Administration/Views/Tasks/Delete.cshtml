@@ -6,7 +6,7 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Главная</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Админ-панель</a></li>
         <li class="breadcrumb-item"><a asp-action="Index">Задачи ToDo</a></li>
         <li class="breadcrumb-item active" aria-current="page">Удаление задачи</li>
     </ol>
@@ -46,19 +46,7 @@
                     <label asp-for="Priority">Приоритет задачи</label>
                 </div>
             </div>
-            <div class="col">
-                <div class="form-floating">
-                    @if (Model.UserNavigation is not null)
-                    {
-                        <input asp-for="UserNavigation!.UserName" class="form-control" placeholder="Исполнитель" disabled readonly />
-                    }
-                    else
-                    {
-                        <input value="Отсутствует" class="form-control" disabled readonly />
-                    }
-                    <label asp-for="UserNavigation">Исполнитель</label>
-                </div>
-            </div>
+
         </div>
     </div>
     <div class="col-12 col-xl-6">
