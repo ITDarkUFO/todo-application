@@ -20,6 +20,7 @@ namespace Application.Areas.Api.Controllers
         private readonly SignInManager<User> _signInManager = signInManager;
         private readonly PasswordHasher<User> _passwordHasher = new();
 
+        [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
@@ -42,9 +43,10 @@ namespace Application.Areas.Api.Controllers
                 }
             }
 
-            return BadRequest(request);
+            return BadRequest(ModelState);
         }
 
+        [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto request)
         {

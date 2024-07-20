@@ -7,23 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Application.Data;
 using Application.Models;
+using Application.Interfaces;
+using Application.Utilities;
 
 namespace Application.Areas.Administration.Controllers
 {
     [Area("Administration")]
     [Route("admin/priorities")]
-    public class PrioritiesController(ApplicationDbContext context) : Controller
+    public class PrioritiesController(IPriorityService priorityService) : Controller
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly IPriorityService _priorityService = priorityService;
 
         [Route("")]
         public async Task<IActionResult> Index()
         {
-            var priorities = await _context.Priorities.OrderBy(p => p.Level).ToListAsync();
+            var priorities = await _priorityService.GetPriorityListAsync();
 
-            foreach (var priority in priorities)
+            if (priorities is null)
             {
-                priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
+                return NotFound();
             }
 
             return View(priorities);
@@ -37,15 +39,13 @@ namespace Application.Areas.Administration.Controllers
                 return NotFound();
             }
 
-            var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
-            if (priority == null)
+            var priorityResult = await _priorityService.GetPriorityByIdAsync(id.Value);
+            if (!priorityResult.IsSuccess)
             {
                 return NotFound();
             }
 
-            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
-
-            return View(priority);
+            return View(priorityResult.Priority);
         }
 
         [Route("create")]
@@ -59,18 +59,21 @@ namespace Application.Areas.Administration.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Level")] Priority priority)
         {
-            if (await _context.Priorities.AsNoTracking()
-                .AnyAsync(p => p.Level == priority.Level))
-                ModelState.AddModelError("Level", $"Уровень приоритета {priority.Level} уже существует.");
-
-            if (priority.Level <= 0)
-                ModelState.AddModelError("Level", "Уровень приоритета не может быть меньше или равен нулю.");
-
             if (ModelState.IsValid)
             {
-                _context.Add(priority);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var priorityResult = await _priorityService.CreatePriorityAsync(priority);
+
+                if (priorityResult.ValidationResult.IsValid)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    foreach (var error in priorityResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
             }
 
             return View(priority);
@@ -84,15 +87,15 @@ namespace Application.Areas.Administration.Controllers
                 return NotFound();
             }
 
-            var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
-            if (priority == null)
+            var priorityResult = await _priorityService.GetPriorityByIdAsync(id.Value);
+            if (!priorityResult.IsSuccess)
             {
                 return NotFound();
             }
 
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
-            return View(priority);
+            return View(priorityResult.Priority);
         }
 
         [Route("edit")]
@@ -100,33 +103,21 @@ namespace Application.Areas.Administration.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([Bind("Id,Level")] Priority priority)
         {
-            if (await _context.Priorities.AsNoTracking()
-                .AnyAsync(p => p.Level == priority.Level && p.Id != priority.Id))
-                ModelState.AddModelError("Level", $"Level {priority.Level} уже существует.");
-
-            if (priority.Level <= 0)
-                ModelState.AddModelError("Level", "Уровень приоритета не может быть меньше или равен нулю.");
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(priority);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PriorityExists(priority.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                var priorityResult = await _priorityService.EditPriorityAsync(priority);
 
-                return RedirectToAction(nameof(Index));
+                if (priorityResult.ValidationResult.IsValid)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    foreach (var error in priorityResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
             }
 
             return View(priority);
@@ -140,15 +131,15 @@ namespace Application.Areas.Administration.Controllers
                 return NotFound();
             }
 
-            var priority = await _context.Priorities.FirstOrDefaultAsync(m => m.Id == id);
-            if (priority == null)
+            var priorityResult = await _priorityService.GetPriorityByIdAsync(id.Value);
+            if (!priorityResult.IsSuccess)
             {
                 return NotFound();
             }
 
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
-            return View(priority);
+            return View(priorityResult.Priority);
         }
 
         [Route("delete")]
@@ -156,19 +147,8 @@ namespace Application.Areas.Administration.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed([FromForm] int id)
         {
-            var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
-            if (priority != null)
-            {
-                _context.Priorities.Remove(priority);
-            }
-
-            await _context.SaveChangesAsync();
+            var priorityResult = await _priorityService.DeletePriorityAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool PriorityExists(int id)
-        {
-            return _context.Priorities.Any(e => e.Id == id);
         }
     }
 }

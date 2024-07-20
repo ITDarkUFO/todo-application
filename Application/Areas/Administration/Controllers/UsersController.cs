@@ -92,6 +92,7 @@ namespace Application.Areas.Administration.Controllers
                 };
 
                 newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
+                //await _userManager.AddToRoleAsync(newUser, "admin");
 
                 await _userManager.CreateAsync(newUser);
 

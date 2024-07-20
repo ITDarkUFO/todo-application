@@ -1,4 +1,6 @@
 ﻿using Application.Data;
+using Application.Interfaces;
+using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,18 +10,18 @@ namespace Application.Areas.Api.Controllers
     [ApiController]
     [Area("Api")]
     [Route("api/priorities")]
-    public class PrioritiesController(ApplicationDbContext context) : ControllerBase
+    public class PrioritiesController(IPriorityService priorityService) : ControllerBase
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly IPriorityService _priorityService = priorityService;
 
         [Route("")]
         public async Task<IActionResult> Index()
         {
-            var priorities = await _context.Priorities.OrderBy(p => p.Level).ToListAsync();
+            var priorities = await _priorityService.GetPriorityListAsync();
 
-            foreach (var priority in priorities)
+            if (priorities is null)
             {
-                priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
+                return NotFound();
             }
 
             return Ok(priorities);
@@ -33,15 +35,75 @@ namespace Application.Areas.Api.Controllers
                 return NotFound();
             }
 
-            var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
-            if (priority == null)
+            var priorityResult = await _priorityService.GetPriorityByIdAsync(id.Value);
+            if (!priorityResult.IsSuccess)
             {
                 return NotFound();
             }
 
-            priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
+            return Ok(priorityResult.Priority);
+        }
 
-            return Ok(priority);
+        [HttpPost]
+        [Route("create")]
+        public async Task<IActionResult> Create([FromBody] Priority priority)
+        {
+            if (ModelState.IsValid)
+            {
+                var priorityResult = await _priorityService.CreatePriorityAsync(priority);
+
+                if (priorityResult.ValidationResult.IsValid)
+                {
+                    return CreatedAtAction(nameof(Create), priorityResult.Priority);
+                }
+                else
+                {
+                    foreach (var error in priorityResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        [HttpPost]
+        [Route("edit")]
+        public async Task<IActionResult> Edit([FromBody] Priority priority)
+        {
+            if (ModelState.IsValid)
+            {
+                var priorityResult = await _priorityService.EditPriorityAsync(priority);
+
+                if (priorityResult.ValidationResult.IsValid)
+                {
+                    return Ok(priorityResult.Priority);
+                }
+                else
+                {
+                    foreach (var error in priorityResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        [HttpPost]
+        [Route("delete")]
+        public async Task<IActionResult> Delete([FromBody] int id)
+        {
+            var priorityResult = await _priorityService.DeletePriorityAsync(id);
+
+            if (!priorityResult.ValidationResult.IsValid)
+            {
+                NotFound();
+            }
+
+            return Ok(priorityResult.Priority);
         }
     }
 }

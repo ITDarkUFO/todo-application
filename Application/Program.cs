@@ -1,9 +1,8 @@
-﻿using Application.Areas.Administration.Controllers;
-using Application.Data;
+﻿using Application.Data;
+using Application.Interfaces;
 using Application.Models;
+using Application.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +20,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = new PathString("/account/login");
 });
+
+builder.Services.AddScoped<IPriorityService, PriorityService>();
 
 builder.Services.AddAuthorization();
 
