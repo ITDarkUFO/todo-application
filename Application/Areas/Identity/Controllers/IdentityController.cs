@@ -1,4 +1,4 @@
-﻿using Application.Areas.Identity.Models;
+﻿using Application.Dtos;
 using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

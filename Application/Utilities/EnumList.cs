@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.ComponentModel.DataAnnotations;
 
-namespace Application.Scripts
+namespace Application.Utilities
 {
     public static class Extensions
     {

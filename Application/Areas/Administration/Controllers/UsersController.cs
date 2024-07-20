@@ -1,5 +1,5 @@
-﻿using Application.Areas.Identity.Models;
-using Application.Data;
+﻿using Application.Data;
+using Application.Dtos;
 using Application.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

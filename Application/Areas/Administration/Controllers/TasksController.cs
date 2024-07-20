@@ -1,7 +1,7 @@
 ﻿using Application.Data;
 using Application.Enums;
 using Application.Models;
-using Application.Scripts;
+using Application.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

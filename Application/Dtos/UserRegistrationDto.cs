@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.Areas.Identity.Models
+namespace Application.Dtos
 {
     public class UserRegistrationDto
     {

@@ -13,6 +13,7 @@ builder.Services.AddTransient<ApplicationDbContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<User, IdentityRole>(options => {/*options.SignIn.RequireConfirmedAccount = true;*/})
+    .AddApiEndpoints()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -20,6 +21,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = new PathString("/account/login");
 });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();

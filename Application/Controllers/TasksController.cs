@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Application.Data;
 using Application.Enums;
 using Application.Models;
-using Application.Scripts;
+using Application.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

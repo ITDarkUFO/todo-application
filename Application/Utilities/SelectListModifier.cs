@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Application.Scripts
+namespace Application.Utilities
 {
     public static class SelectListModifier
     {
