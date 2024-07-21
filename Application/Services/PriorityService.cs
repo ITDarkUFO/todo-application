@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.Models;
 using Application.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services
@@ -27,7 +28,7 @@ namespace Application.Services
             var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
             if (priority == null)
             {
-                return new() { Priority = null };
+                return new();
             }
 
             priority.ToDoItems = await _context.ToDoItems.Where(i => i.Priority == priority.Id).ToListAsync();
@@ -75,20 +76,23 @@ namespace Application.Services
                 validationResult.AddError("Level", "Уровень приоритета не может быть меньше или равен нулю");
             }
 
-            try
+            if (validationResult.IsValid)
             {
-                _context.Update(priority);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await PriorityExists(priority.Id))
+                try
                 {
-                    validationResult.AddError("Id", "Некорректный ID приоритета");
+                    _context.Update(priority);
+                    await _context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    validationResult.AddError("", "Произошла ошибка при попытке обновить данные. Пожалуйста, попробуйте снова");
+                    if (!await PriorityExists(priority.Id))
+                    {
+                        validationResult.AddError("Id", "Некорректный ID приоритета");
+                    }
+                    else
+                    {
+                        validationResult.AddError("", "Произошла ошибка при попытке обновить данные. Пожалуйста, попробуйте снова");
+                    }
                 }
             }
 

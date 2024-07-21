@@ -1,6 +1,7 @@
 ﻿using Application.Data;
 using Application.Dtos;
 using Application.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace Application.Areas.Administration.Controllers
 {
+    [Authorize(Roles = "admin")]
     [Area("Administration")]
     [Route("admin/users")]
     public partial class UsersController(ApplicationDbContext context, UserManager<User> userManager, SignInManager<User> signInManager) : Controller

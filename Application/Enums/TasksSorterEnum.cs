@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Application.Enums
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum TasksFilterEnum
+    public enum TasksSorterEnum
     {
         [Display(Name = "По умолчанию")]
         [EnumMember(Value = "default")]

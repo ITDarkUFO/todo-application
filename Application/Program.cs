@@ -3,10 +3,9 @@ using Application.Interfaces;
 using Application.Models;
 using Application.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllersWithViews();
 
 builder.Services.AddTransient<ApplicationDbContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -19,16 +18,54 @@ builder.Services.AddIdentity<User, IdentityRole>(options => {/*options.SignIn.Re
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = new PathString("/account/login");
+    //options.AccessDeniedPath = new PathString("/account/accessdenied");
+
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            }
+
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        }
+    };
 });
 
-builder.Services.AddScoped<IPriorityService, PriorityService>();
-
+builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddTransient<DataInitializerService>();
+builder.Services.AddScoped<IPriorityService, PriorityService>();
+builder.Services.AddScoped<ITasksService, TasksService>();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dataInitializerService = scope.ServiceProvider.GetService<DataInitializerService>();
+    
+    if (dataInitializerService is not null)
+        await dataInitializerService.InitializeAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

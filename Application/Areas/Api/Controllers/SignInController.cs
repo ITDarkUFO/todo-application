@@ -11,7 +11,7 @@ namespace Application.Areas.Api.Controllers
     [ApiController]
     [Area("Api")]
     [Route("api/account")]
-    public partial class AccountController(UserManager<User> userManager, SignInManager<User> signInManager) : ControllerBase
+    public partial class SignInController(UserManager<User> userManager, SignInManager<User> signInManager) : ControllerBase
     {
         [GeneratedRegex("^[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$")]
         private static partial Regex emailRegex();
@@ -81,6 +81,13 @@ namespace Application.Areas.Api.Controllers
             }
 
             return BadRequest(request);
+        }
+
+        [Route("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return Ok("Выход из системы выполнен");
         }
     }
 }

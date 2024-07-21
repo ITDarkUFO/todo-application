@@ -9,9 +9,11 @@ using Application.Data;
 using Application.Models;
 using Application.Interfaces;
 using Application.Utilities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Application.Areas.Administration.Controllers
 {
+    [Authorize(Roles = "admin")]
     [Area("Administration")]
     [Route("admin/priorities")]
     public class PrioritiesController(IPriorityService priorityService) : Controller

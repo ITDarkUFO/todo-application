@@ -2,11 +2,13 @@
 using Application.Interfaces;
 using Application.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Areas.Api.Controllers
 {
+    [Authorize(Roles = "admin")]
     [ApiController]
     [Area("Api")]
     [Route("api/priorities")]

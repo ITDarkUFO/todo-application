@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Application.Data;
 using Application.Enums;
+using Application.Interfaces;
 using Application.Models;
 using Application.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -13,70 +14,20 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Controllers
 {
     [Route("tasks")]
-    public class TasksController(ApplicationDbContext context, UserManager<User> userManager) : Controller
+    public class TasksController(ITasksService tasksService, IPriorityService priorityService) : Controller
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly UserManager<User> _userManager = userManager;
+        private readonly ITasksService _tasksService = tasksService;
+        private readonly IPriorityService _priorityService = priorityService;
 
         [Route("")]
-        public async Task<IActionResult> Index([FromQuery] TasksFilterEnum? tasksFilter, [FromQuery] TaskStatusFilterEnum? taskStatusFilter, [FromQuery] int? taskPriorityFilter)
+        public async Task<IActionResult> Index([FromQuery] TasksSorterEnum? tasksSorter, [FromQuery] TaskStatusFilterEnum? taskStatusFilter, [FromQuery] int? taskPriorityFilter)
         {
-            var tasks = await _context.ToDoItems.Where(t => t.User == _userManager.GetUserId(User)).OrderBy(t => t.DueDate).ToListAsync();
+            var tasks = await _tasksService.GetUserTaskList(User, tasksSorter, taskStatusFilter, taskPriorityFilter);
 
-            if (tasksFilter.HasValue)
-            {
-                switch (tasksFilter.Value)
-                {
-                    case TasksFilterEnum.Status:
-                        tasks = [.. tasks.OrderBy(t => t.IsCompleted)];
-                        break;
-
-                    case TasksFilterEnum.Priority:
-                        tasks = [.. tasks.OrderByDescending(t => t.Priority)];
-                        break;
-                }
-            }
-
-            if (taskStatusFilter.HasValue)
-            {
-                switch (taskStatusFilter.Value)
-                {
-                    case TaskStatusFilterEnum.Ongoing:
-                        tasks = [.. tasks.Where(t => !t.IsCompleted)];
-                        break;
-
-                    case TaskStatusFilterEnum.Completed:
-                        tasks = [.. tasks.Where(t => t.IsCompleted)];
-                        break;
-                }
-            }
-
-            if (taskPriorityFilter is not null)
-            {
-                if (taskPriorityFilter != 0)
-                {
-                    if (taskPriorityFilter == -1)
-                        tasks = [.. tasks.Where(t => t.Priority == 0)];
-                    else
-                        tasks = [.. tasks.Where(t => t.Priority == taskPriorityFilter)];
-                }
-            }
-
-            foreach (var task in tasks)
-            {
-                task.PriorityNavigation = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == task.Priority);
-            }
-
+            var prioritiesList = (await _priorityService.GetPriorityListAsync()).OrderBy(p => p.Level);
             var priorities = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Приоритет задачи", "-1");
-
+                new SelectList(prioritiesList, "Id", "Level"), "Без приоритета", "Приоритет задачи", "-1");
             ViewData["Priorities"] = SelectListModifier.InsertSelectItem(priorities, 1, "Любой приоритет", "0");
-
-            //var taskFilters = EnumList.GetList<TasksFilterEnum>();
-            //taskFilters.Remove(TasksFilterEnum.User);
-
-            //ViewData["Sorters"] = SelectListModifier.InsertPickItem(EnumList.GetSelectList(taskFilters)!, "Сортировка задач", false);
-            //ViewData["Sorters"] = SelectListModifier.InsertPickItem(new SelectList(taskFilters, tasksFilter), "Сортировка задач", false);
 
             return View(tasks);
         }
@@ -89,33 +40,30 @@ namespace Application.Controllers
                 return NotFound();
             }
 
-            var task = await _context.ToDoItems.FirstOrDefaultAsync(m => m.Id == id);
-            if (task == null)
+            var taskResult = await _tasksService.GetTaskByIdAsync(User, id.Value);
+            if (!taskResult.IsSuccess)
             {
                 return NotFound();
             }
 
-            if (task.User != _userManager.GetUserId(User))
+            if (taskResult.Task!.DueDate.HasValue)
             {
-                return NotFound();
+                ViewData["DueTime"] = TimeOnly.FromDateTime(taskResult.Task.DueDate.Value);
             }
 
-            if (task.DueDate.HasValue)
-            {
-                ViewData["DueTime"] = TimeOnly.FromDateTime(task.DueDate.Value);
-            }
-
+            var prioritiesList = (await _priorityService.GetPriorityListAsync()).OrderBy(p => p.Level);
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
+                new SelectList(prioritiesList, "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
-            return View(task);
+            return View(taskResult.Task);
         }
 
         [Route("create")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var prioritiesList = (await _priorityService.GetPriorityListAsync()).OrderBy(p => p.Level);
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
+                new SelectList(prioritiesList, "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
             return View();
         }
@@ -127,23 +75,24 @@ namespace Application.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (task.DueDate.HasValue)
-                {
-                    if (dueTime.HasValue)
-                        task.DueDate = new DateTime(DateOnly.FromDateTime(task.DueDate.Value), dueTime.Value, DateTimeKind.Utc);
-                    else
-                        task.DueDate = new DateTime(DateOnly.FromDateTime(task.DueDate.Value), new TimeOnly(), DateTimeKind.Utc);
-                }
-                else if (dueTime.HasValue)
-                    task.DueDate = new DateTime(DateOnly.FromDateTime(DateTime.Now), dueTime.Value, DateTimeKind.Utc);
+                var taskResult = await _tasksService.CreateTaskAsync(User, task, dueTime);
 
-                _context.Add(task);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (taskResult.ValidationResult.IsValid)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    foreach (var error in taskResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
             }
 
+            var prioritiesList = (await _priorityService.GetPriorityListAsync()).OrderBy(p => p.Level);
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
+                new SelectList(prioritiesList, "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
             return View(task);
         }
@@ -156,28 +105,24 @@ namespace Application.Controllers
                 return NotFound();
             }
 
-            var task = await _context.ToDoItems.FirstOrDefaultAsync(i => i.Id == id);
-            if (task == null)
+            var taskResult = await _tasksService.GetTaskByIdAsync(User, id.Value);
+            if (!taskResult.IsSuccess)
             {
                 return NotFound();
             }
 
-            if (task.User != _userManager.GetUserId(User))
+            if (taskResult.Task!.DueDate.HasValue)
             {
-                return NotFound();
+                ViewData["DueTime"] = TimeOnly.FromDateTime(taskResult.Task.DueDate.Value);
             }
 
-            if (task.DueDate.HasValue)
-            {
-                ViewData["DueTime"] = TimeOnly.FromDateTime(task.DueDate.Value);
-            }
-
+            var prioritiesList = (await _priorityService.GetPriorityListAsync()).OrderBy(p => p.Level);
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
+                new SelectList(prioritiesList, "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
-            return View(task);
+            return View(taskResult.Task);
         }
 
         [Route("edit")]
@@ -185,44 +130,25 @@ namespace Application.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromForm] TimeOnly? dueTime, [Bind("Id,Title,Description,IsCompleted,DueDate,Priority,User")] ToDoItem task)
         {
-            if (task.User != _userManager.GetUserId(User))
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                if (task.DueDate.HasValue)
+                var taskResult = await _tasksService.EditTaskAsync(User, task, dueTime);
+                if (taskResult.ValidationResult.IsValid)
                 {
-                    if (dueTime.HasValue)
-                        task.DueDate = new DateTime(DateOnly.FromDateTime(task.DueDate.Value), dueTime.Value, DateTimeKind.Utc);
-                    else
-                        task.DueDate = new DateTime(DateOnly.FromDateTime(task.DueDate.Value), new TimeOnly(), DateTimeKind.Utc);
+                    return RedirectToAction(nameof(Index));
                 }
-                else if (dueTime.HasValue)
-                    task.DueDate = new DateTime(DateOnly.FromDateTime(DateTime.Now), dueTime.Value, DateTimeKind.Utc);
-
-                try
+                else
                 {
-                    _context.Update(task);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ToDoItemExists(task.Id))
+                    foreach (var error in taskResult.ValidationResult.Errors)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ModelState.AddModelError(error.Key, error.Value);
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
 
+            var prioritiesList = (await _priorityService.GetPriorityListAsync()).OrderBy(p => p.Level);
             ViewData["Priorities"] = SelectListModifier.InsertInitialItems(
-                new SelectList(_context.Priorities.OrderBy(p => p.Level), "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
+                new SelectList(prioritiesList, "Id", "Level"), "Без приоритета", "Выберите приоритет", "0");
 
             return View(task);
         }
@@ -235,20 +161,15 @@ namespace Application.Controllers
                 return NotFound();
             }
 
-            var task = await _context.ToDoItems.FirstOrDefaultAsync(m => m.Id == id);
-            if (task == null)
-            {
-                return NotFound();
-            }
-
-            if (task.User != _userManager.GetUserId(User))
+            var taskResult = await _tasksService.GetTaskByIdAsync(User, id.Value);
+            if (!taskResult.IsSuccess)
             {
                 return NotFound();
             }
 
             ViewData["PreviousPage"] = Request.Headers.Referer.ToString();
 
-            return View(task);
+            return View(taskResult.Task);
         }
 
         [Route("delete")]
@@ -256,25 +177,8 @@ namespace Application.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var task = await _context.ToDoItems.FirstOrDefaultAsync(i => i.Id == id);
-
-            if (task != null)
-            {
-                if (task.User != _userManager.GetUserId(User))
-                {
-                    return NotFound();
-                }
-
-                _context.ToDoItems.Remove(task);
-            }
-
-            await _context.SaveChangesAsync();
+            var taskResult = await _tasksService.DeleteTaskAsync(User, id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ToDoItemExists(int id)
-        {
-            return _context.ToDoItems.Any(e => e.Id == id);
         }
     }
 }

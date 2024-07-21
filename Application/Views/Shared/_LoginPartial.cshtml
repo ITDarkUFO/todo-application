@@ -9,7 +9,7 @@
             <span class="nav-link text-dark">Здравствуйте, @User.Identity?.Name!</span>
         </li>
         <li class="nav-item">
-            <form class="form-inline" asp-area="Identity" asp-controller="Identity" asp-action="Logout">
+            <form class="form-inline" asp-area="Identity" asp-controller="SignIn" asp-action="Logout">
                 <button type="submit" class="nav-link btn btn-link text-dark">Выйти</button>
             </form>
         </li>
@@ -17,10 +17,10 @@
     else
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-controller="Identity" asp-action="Register">Зарегистрироваться</a>
+            <a class="nav-link text-dark" asp-area="Identity" asp-controller="SignIn" asp-action="Register">Зарегистрироваться</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-controller="Identity" asp-action="Login">Войти</a>
+            <a class="nav-link text-dark" asp-area="Identity" asp-controller="SignIn" asp-action="Login">Войти</a>
         </li>
     }
 </ul>

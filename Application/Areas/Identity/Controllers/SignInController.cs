@@ -11,7 +11,7 @@ namespace Application.Areas.Identity.Controllers
     [AllowAnonymous]
     [Area("Identity")]
     [Route("account")]
-    public partial class IdentityController(UserManager<User> userManager, SignInManager<User> signInManager) : Controller
+    public partial class SignInController(UserManager<User> userManager, SignInManager<User> signInManager) : Controller
     {
         [GeneratedRegex("^[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$")]
         private static partial Regex emailRegex();
