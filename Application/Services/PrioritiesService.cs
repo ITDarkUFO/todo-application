@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services
 {
-    public class PriorityService(ApplicationDbContext context) : IPriorityService
+    public class PrioritiesService(ApplicationDbContext context) : IPrioritiesService
     {
         private readonly ApplicationDbContext _context = context;
 

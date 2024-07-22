@@ -15,7 +15,8 @@ namespace Application.Services
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<User> _userManager = userManager;
 
-        public async Task<List<ToDoItem>?> GetUserTaskList(ClaimsPrincipal principal, TasksSorterEnum? tasksSorter, TaskStatusFilterEnum? taskStatusFilter, int? taskPriorityFilter)
+        public async Task<List<ToDoItem>?> GetUserTaskList(ClaimsPrincipal principal,
+            TasksSorterEnum? tasksSorter = null, TaskStatusFilterEnum? taskStatusFilter = null, int? taskPriorityFilter = null)
         {
             List<ToDoItem> tasks;
 
@@ -37,7 +38,7 @@ namespace Application.Services
         }
 
         public async Task<List<ToDoItem>?> GetTaskListAsync(ClaimsPrincipal principal,
-            TasksSorterEnum? tasksSorter, TaskStatusFilterEnum? taskStatusFilter, int? taskPriorityFilter, string? taskUserFilter)
+            TasksSorterEnum? tasksSorter = null, TaskStatusFilterEnum? taskStatusFilter = null, int? taskPriorityFilter = null, string? taskUserFilter = null)
         {
             List<ToDoItem> tasks;
 

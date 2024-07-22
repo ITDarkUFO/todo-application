@@ -12,9 +12,9 @@ namespace Application.Areas.Api.Controllers
     [ApiController]
     [Area("Api")]
     [Route("api/priorities")]
-    public class PrioritiesController(IPriorityService priorityService) : ControllerBase
+    public class PrioritiesController(IPrioritiesService priorityService) : ControllerBase
     {
-        private readonly IPriorityService _priorityService = priorityService;
+        private readonly IPrioritiesService _priorityService = priorityService;
 
         [Route("")]
         public async Task<IActionResult> Index()

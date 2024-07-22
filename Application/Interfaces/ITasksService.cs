@@ -7,9 +7,11 @@ namespace Application.Interfaces
 {
     public interface ITasksService
     {
-        Task<List<ToDoItem>?> GetUserTaskList(ClaimsPrincipal principal, TasksSorterEnum? tasksSorter, TaskStatusFilterEnum? taskStatusFilter, int? taskPriorityFilter);
+        Task<List<ToDoItem>?> GetUserTaskList(ClaimsPrincipal principal,
+            TasksSorterEnum? tasksSorter = null, TaskStatusFilterEnum? taskStatusFilter = null, int? taskPriorityFilter = null);
 
-        Task<List<ToDoItem>?> GetTaskListAsync(ClaimsPrincipal principal, TasksSorterEnum? tasksSorter, TaskStatusFilterEnum? taskStatusFilter, int? taskPriorityFilter, string? taskUserFilter);
+        Task<List<ToDoItem>?> GetTaskListAsync(ClaimsPrincipal principal,
+            TasksSorterEnum? tasksSorter = null, TaskStatusFilterEnum? taskStatusFilter = null, int? taskPriorityFilter = null, string? taskUserFilter = null);
 
         Task<TaskResult> GetTaskByIdAsync(ClaimsPrincipal principal, int id);
 

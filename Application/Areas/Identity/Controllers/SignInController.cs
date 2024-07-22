@@ -1,24 +1,17 @@
 ﻿using Application.Dtos;
-using Application.Models;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.Text.RegularExpressions;
 
 namespace Application.Areas.Identity.Controllers
 {
     [AllowAnonymous]
     [Area("Identity")]
     [Route("account")]
-    public partial class SignInController(UserManager<User> userManager, SignInManager<User> signInManager) : Controller
+    public class SignInController(IUsersService usersService) : Controller
     {
-        [GeneratedRegex("^[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$")]
-        private static partial Regex emailRegex();
-
-        private readonly UserManager<User> _userManager = userManager;
-        private readonly SignInManager<User> _signInManager = signInManager;
-        private readonly PasswordHasher<User> _passwordHasher = new();
+        private readonly IUsersService _usersService = usersService;
 
         [Route("register")]
         public IActionResult Register()
@@ -32,34 +25,20 @@ namespace Application.Areas.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(UserRegistrationDto request)
         {
-            if (!emailRegex().IsMatch(request.Email))
-                ModelState.AddModelError("Email", "Некорректный адрес электронной почты");
-
-            if (await _userManager.FindByEmailAsync(request.Email) is not null)
-                ModelState.AddModelError("Email", "Почта уже используется");
-
-            if (await _userManager.FindByNameAsync(request.UserName) is not null)
-                ModelState.AddModelError("UserName", "Данное имя уже занято");
-
-            if (request.Password != request.ConfirmPassword)
-                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
-
             if (ModelState.IsValid)
             {
-                User newUser = new()
+                var userResult = await _usersService.RegisterUserAsync(request);
+                if (userResult.IsSuccess)
                 {
-                    Email = request.Email,
-                    NormalizedEmail = request.Email.Normalize().ToUpperInvariant(),
-                    UserName = request.UserName,
-                    NormalizedUserName = request.UserName.Normalize().ToUpperInvariant()
-                };
-
-                newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
-
-                await _userManager.CreateAsync(newUser);
-                await _signInManager.SignInAsync(newUser, false);
-
-                return RedirectToAction("Index", "Home");
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    foreach (var error in userResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
             }
 
             return View(request);
@@ -79,16 +58,10 @@ namespace Application.Areas.Identity.Controllers
         {
             string? returnUrl = TempData["ReturnUrl"] as string;
 
-            User? user = await _userManager.FindByNameAsync(request.UserName);
-
-            if (user is null)
-                ModelState.AddModelError("UserName", "Данный пользователь не найден");
-
             if (ModelState.IsValid)
             {
-                await _signInManager.PasswordSignInAsync(user!, request.Password, request.RememberMe, false);
-
-                if (_signInManager.IsSignedIn(User))
+                var userResult = await _usersService.LoginUserAsync(request);
+                if (userResult.IsSuccess)
                 {
                     if (!returnUrl.IsNullOrEmpty() && Url.IsLocalUrl(returnUrl))
                     {
@@ -101,7 +74,10 @@ namespace Application.Areas.Identity.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("Password", "Неправильный пароль");
+                    foreach (var error in userResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
                 }
             }
 
@@ -113,7 +89,7 @@ namespace Application.Areas.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            await _usersService.LogoutAsync();
             return RedirectToAction("Index", "Home");
         }
     }

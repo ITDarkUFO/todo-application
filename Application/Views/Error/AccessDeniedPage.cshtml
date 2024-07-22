@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Нет доступа";
+}
+
+<div class="row vh-100">
+    <div class="mt-auto mb-auto row">
+        <div class="col-12 col-xl-6 d-flex flex-column align-items-start justify-content-center">
+            <h1 class="display-4 text-body">Доступ запрещен!</h1>
+            <p class="lead">У вас недостаточно полномочий,<br />чтобы увидеть страницу, которую вы запросили.</p>
+
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary">Вернуться на главную</a>
+        </div>
+        <div class="col-12 col-xl-6">
+            <img src="~/img/403.svg" width="100%" height="100%" style="user-select: none; pointer-events: none;" />
+        </div>
+    </div>
+</div>

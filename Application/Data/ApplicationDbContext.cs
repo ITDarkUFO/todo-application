@@ -31,8 +31,7 @@ namespace Application.Data
         {
             optionsBuilder.UseNpgsql(_configuration.GetConnectionString("Default"));
 
-            //TODO Удалить EnableSensitiveDataLogging
-            optionsBuilder.EnableSensitiveDataLogging();
+            //optionsBuilder.EnableSensitiveDataLogging();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -65,5 +64,4 @@ namespace Application.Data
             });
         }
     }
-
 }

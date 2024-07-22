@@ -15,11 +15,11 @@ namespace Application.Areas.Administration.Controllers
     [Authorize(Roles = "admin")]
     [Area("Administration")]
     [Route("admin/tasks")]
-    public class TasksController(UserManager<User> userManager, ITasksService tasksService, IPriorityService priorityService) : Controller
+    public class TasksController(UserManager<User> userManager, ITasksService tasksService, IPrioritiesService priorityService) : Controller
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly ITasksService _tasksService = tasksService;
-        private readonly IPriorityService _priorityService = priorityService;
+        private readonly IPrioritiesService _priorityService = priorityService;
 
         [Route("")]
         public async Task<IActionResult> Index([FromQuery] TasksSorterEnum? tasksSorter, [FromQuery] TaskStatusFilterEnum? taskStatusFilter, [FromQuery] int? taskPriorityFilter, [FromQuery] string? taskUserFilter)

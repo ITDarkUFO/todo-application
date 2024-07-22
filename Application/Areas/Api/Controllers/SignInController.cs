@@ -1,9 +1,8 @@
 ﻿using Application.Dtos;
-using Application.Models;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace Application.Areas.Api.Controllers
 {
@@ -11,73 +10,51 @@ namespace Application.Areas.Api.Controllers
     [ApiController]
     [Area("Api")]
     [Route("api/account")]
-    public partial class SignInController(UserManager<User> userManager, SignInManager<User> signInManager) : ControllerBase
+    public class SignInController(IUsersService usersService) : ControllerBase
     {
-        [GeneratedRegex("^[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$")]
-        private static partial Regex emailRegex();
-
-        private readonly UserManager<User> _userManager = userManager;
-        private readonly SignInManager<User> _signInManager = signInManager;
-        private readonly PasswordHasher<User> _passwordHasher = new();
+        private readonly IUsersService _usersService = usersService;
 
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
-            User? user = await _userManager.FindByNameAsync(request.UserName);
-
-            if (user is null)
-                ModelState.AddModelError("UserName", "Данный пользователь не найден");
-
             if (ModelState.IsValid)
             {
-                await _signInManager.PasswordSignInAsync(user!, request.Password, request.RememberMe, false);
-
-                if (_signInManager.IsSignedIn(User))
+                var userResult = await _usersService.LoginUserAsync(request);
+                if (userResult.IsSuccess)
                 {
-                    return Ok("Вход выполнен");
+                    return Ok("Выполнен вход в систему");
                 }
                 else
                 {
-                    ModelState.AddModelError("Password", "Неправильный пароль");
+                    foreach (var error in userResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
                 }
             }
 
-            return BadRequest(ModelState);
+            return BadRequest(request);
         }
 
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto request)
         {
-            if (!emailRegex().IsMatch(request.Email))
-                ModelState.AddModelError("Email", "Некорректный адрес электронной почты");
-
-            if (await _userManager.FindByEmailAsync(request.Email) is not null)
-                ModelState.AddModelError("Email", "Почта уже используется");
-
-            if (await _userManager.FindByNameAsync(request.UserName) is not null)
-                ModelState.AddModelError("UserName", "Данное имя уже занято");
-
-            if (request.Password != request.ConfirmPassword)
-                ModelState.AddModelError("ConfirmPassword", "Пароли не совпадают");
-
             if (ModelState.IsValid)
             {
-                User newUser = new()
+                var userResult = await _usersService.RegisterUserAsync(request);
+                if (userResult.IsSuccess)
                 {
-                    Email = request.Email,
-                    NormalizedEmail = request.Email.Normalize().ToUpperInvariant(),
-                    UserName = request.UserName,
-                    NormalizedUserName = request.UserName.Normalize().ToUpperInvariant()
-                };
-
-                newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
-
-                await _userManager.CreateAsync(newUser);
-                await _signInManager.SignInAsync(newUser, false);
-
-                return Ok("Регистрация прошла успешно");
+                    return CreatedAtAction(nameof(Create), userResult.User);
+                }
+                else
+                {
+                    foreach (var error in userResult.ValidationResult.Errors)
+                    {
+                        ModelState.AddModelError(error.Key, error.Value);
+                    }
+                }
             }
 
             return BadRequest(request);
@@ -86,8 +63,8 @@ namespace Application.Areas.Api.Controllers
         [Route("logout")]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-            return Ok("Выход из системы выполнен");
+            await _usersService.LogoutAsync();
+            return Ok("Выполнен выход из системы");
         }
     }
 }

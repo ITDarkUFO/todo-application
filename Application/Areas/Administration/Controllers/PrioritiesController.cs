@@ -16,9 +16,9 @@ namespace Application.Areas.Administration.Controllers
     [Authorize(Roles = "admin")]
     [Area("Administration")]
     [Route("admin/priorities")]
-    public class PrioritiesController(IPriorityService priorityService) : Controller
+    public class PrioritiesController(IPrioritiesService priorityService) : Controller
     {
-        private readonly IPriorityService _priorityService = priorityService;
+        private readonly IPrioritiesService _priorityService = priorityService;
 
         [Route("")]
         public async Task<IActionResult> Index()

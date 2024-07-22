@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Controllers
 {
     [Route("tasks")]
-    public class TasksController(ITasksService tasksService, IPriorityService priorityService) : Controller
+    public class TasksController(ITasksService tasksService, IPrioritiesService priorityService) : Controller
     {
         private readonly ITasksService _tasksService = tasksService;
-        private readonly IPriorityService _priorityService = priorityService;
+        private readonly IPrioritiesService _priorityService = priorityService;
 
         [Route("")]
         public async Task<IActionResult> Index([FromQuery] TasksSorterEnum? tasksSorter, [FromQuery] TaskStatusFilterEnum? taskStatusFilter, [FromQuery] int? taskPriorityFilter)

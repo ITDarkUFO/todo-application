@@ -3,7 +3,7 @@ using Application.Utilities;
 
 namespace Application.Interfaces
 {
-    public interface IPriorityService
+    public interface IPrioritiesService
     {
         Task<List<Priority>> GetPriorityListAsync();
 

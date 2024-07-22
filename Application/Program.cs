@@ -4,6 +4,7 @@ using Application.Models;
 using Application.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options => {/*options.SignIn.Re
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = new PathString("/account/login");
-    //options.AccessDeniedPath = new PathString("/account/accessdenied");
+    options.AccessDeniedPath = new PathString("/error/accessdenied");
 
     options.Events = new CookieAuthenticationEvents
     {
@@ -54,8 +55,9 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddTransient<DataInitializerService>();
-builder.Services.AddScoped<IPriorityService, PriorityService>();
+builder.Services.AddScoped<IPrioritiesService, PrioritiesService>();
 builder.Services.AddScoped<ITasksService, TasksService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 
 var app = builder.Build();
 
@@ -74,14 +76,14 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    //app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseStatusCodePages();
+app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.UseRouting();
 

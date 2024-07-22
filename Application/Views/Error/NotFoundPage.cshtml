@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Страница не найдена";
+}
+
+<div class="row vh-100">
+    <div class="mt-auto mb-auto row">
+        <div class="col-12 col-xl-6 d-flex flex-column align-items-start justify-content-center">
+            <h1 class="display-4 text-body">Страница не найдена!</h1>
+            <p class="lead">Что-то пошло не так. Страница, которую вы искали,<br />была перемещена, удалена или никогда не существовала.</p>
+
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary">Вернуться на главную</a>
+        </div>
+        <div class="col-12 col-xl-6">
+            <img src="~/img/404.svg" width="100%" height="100%" style="user-select: none; pointer-events: none;"/>
+        </div>
+    </div>
+</div>

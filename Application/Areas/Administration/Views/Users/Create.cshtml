@@ -1,4 +1,4 @@
-﻿@model Application.Dtos.UserRegistrationDto
+﻿@model Application.Dtos.AdminUserRegistrationDto
 
 @{
     ViewData["Title"] = "Добавление пользователя";
@@ -56,8 +56,13 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-12 col-xl-6">
-            <div class="float-end">
+        <div class="col-12 col-xl-6 d-flex justify-content-between">
+            <div class="form-switch d-inline-block col-6">
+                <input asp-for="IsSuperUser" class="form-check-input" placeholder="Добавить как администратора" />
+                <label asp-for="IsSuperUser">Назначить администратором</label>
+                <span asp-validation-for="IsSuperUser" class="text-danger"></span>
+            </div>
+            <div class="d-inline-block text-end col-auto">
                 <a asp-action="Index" class="btn btn-outline-secondary px-4">Назад</a>
                 <input type="submit" value="Добавить" class="btn btn-primary px-5" />
             </div>

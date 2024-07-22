@@ -96,12 +96,12 @@ namespace Application.Areas.Api.Controllers
         public async Task<IActionResult> Delete([FromBody] int id)
         {
             var taskResult = await _tasksService.DeleteTaskAsync(User, id);
-            if (!taskResult.IsSuccess)
+            if (taskResult.IsSuccess)
             {
-                NotFound();
+                return Ok(taskResult.Task);
             }
 
-            return Ok(taskResult.Task);
+            return NotFound();
         }
     }
 }
