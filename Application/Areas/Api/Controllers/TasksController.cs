@@ -1,13 +1,7 @@
-﻿using Application.Data;
-using Application.Enums;
+﻿using Application.Enums;
 using Application.Interfaces;
 using Application.Models;
-using Application.Services;
-using Application.Utilities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Areas.Api.Controllers
 {
@@ -72,6 +66,8 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(ModelState);
         }
 
+        [HttpPost]
+        [Route("edit")]
         public async Task<IActionResult> Edit([FromBody] ToDoItem task, [FromQuery] TimeOnly? dueTime)
         {
             if (ModelState.IsValid)
@@ -79,7 +75,7 @@ namespace Application.Areas.Api.Controllers
                 var taskResult = await _tasksService.EditTaskAsync(User, task, dueTime);
                 if (taskResult.ValidationResult.IsValid)
                 {
-                    return CreatedAtAction(nameof(Create), taskResult.Task);
+                    return Ok(taskResult.Task);
                 }
                 else
                 {
@@ -93,6 +89,8 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(ModelState);
         }
 
+        [HttpPost]
+        [Route("delete")]
         public async Task<IActionResult> Delete([FromBody] int id)
         {
             var taskResult = await _tasksService.DeleteTaskAsync(User, id);

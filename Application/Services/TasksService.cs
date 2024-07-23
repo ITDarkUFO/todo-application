@@ -5,7 +5,6 @@ using Application.Models;
 using Application.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Security.Claims;
 
 namespace Application.Services
@@ -220,6 +219,10 @@ namespace Application.Services
             {
                 switch (tasksSorter.Value)
                 {
+                    case TasksSorterEnum.Name:
+                        tasks = [.. tasks.OrderBy(t => t.Title)];
+                        break;
+
                     case TasksSorterEnum.Status:
                         tasks = [.. tasks.OrderBy(t => t.IsCompleted)];
                         break;

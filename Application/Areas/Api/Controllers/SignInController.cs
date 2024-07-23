@@ -2,7 +2,6 @@
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 namespace Application.Areas.Api.Controllers
 {
@@ -46,7 +45,7 @@ namespace Application.Areas.Api.Controllers
                 var userResult = await _usersService.RegisterUserAsync(request);
                 if (userResult.IsSuccess)
                 {
-                    return CreatedAtAction(nameof(Create), userResult.User);
+                    return CreatedAtAction(nameof(Register), userResult.User);
                 }
                 else
                 {
@@ -60,6 +59,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(request);
         }
 
+        [HttpPost]
         [Route("logout")]
         public async Task<IActionResult> Logout()
         {

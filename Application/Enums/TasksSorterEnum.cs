@@ -21,6 +21,10 @@ namespace Application.Enums
 
         [Display(Name = "По приоритету")]
         [EnumMember(Value = "priority")]
-        Priority
+        Priority,
+
+        [Display(Name = "По названию")]
+        [EnumMember(Value = "name")]
+        Name
     }
 }

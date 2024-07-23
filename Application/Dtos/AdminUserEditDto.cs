@@ -2,6 +2,6 @@
 {
     public class AdminUserEditDto : UserEditDto
     {
-        public bool IsSuperUser { get; set; }
+        public bool IsSuperUser { get; set; } = false;
     }
 }
