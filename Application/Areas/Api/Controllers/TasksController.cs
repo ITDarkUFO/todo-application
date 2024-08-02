@@ -12,7 +12,7 @@ namespace Application.Areas.Api.Controllers
     {
         private readonly ITasksService _tasksService = tasksService;
 
-        [Route("")]
+        [HttpGet("")]
         public async Task<IActionResult> Index([FromQuery] TasksSorterEnum? tasksSorter, [FromQuery] TaskStatusFilterEnum? taskStatusFilter,
             [FromQuery] int? taskPriorityFilter, [FromQuery] string? userLoginFilter)
         {
@@ -25,7 +25,7 @@ namespace Application.Areas.Api.Controllers
             return Ok(tasks);
         }
 
-        [Route("details")]
+        [HttpGet("details")]
         public async Task<IActionResult> Details([FromQuery] int? id)
         {
             if (id == null)
@@ -42,8 +42,7 @@ namespace Application.Areas.Api.Controllers
             return Ok(taskResult.Task);
         }
 
-        [HttpPost]
-        [Route("create")]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ToDoItem task, [FromQuery] TimeOnly? dueTime)
         {
             if (ModelState.IsValid)
@@ -66,8 +65,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        [Route("edit")]
+        [HttpPut("edit")]
         public async Task<IActionResult> Edit([FromBody] ToDoItem task, [FromQuery] TimeOnly? dueTime)
         {
             if (ModelState.IsValid)
@@ -89,8 +87,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        [Route("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromBody] int id)
         {
             var taskResult = await _tasksService.DeleteTaskAsync(User, id);

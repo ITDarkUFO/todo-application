@@ -13,7 +13,7 @@ namespace Application.Areas.Api.Controllers
     {
         private readonly IPrioritiesService _priorityService = priorityService;
 
-        [Route("")]
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             var priorities = await _priorityService.GetPriorityListAsync();
@@ -26,7 +26,7 @@ namespace Application.Areas.Api.Controllers
             return Ok(priorities);
         }
 
-        [Route("details")]
+        [HttpGet("details")]
         public async Task<IActionResult> Details([FromQuery] int? id)
         {
             if (id == null)
@@ -43,8 +43,7 @@ namespace Application.Areas.Api.Controllers
             return Ok(priorityResult.Priority);
         }
 
-        [HttpPost]
-        [Route("create")]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] Priority priority)
         {
             if (ModelState.IsValid)
@@ -67,8 +66,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        [Route("edit")]
+        [HttpPut("edit")]
         public async Task<IActionResult> Edit([FromBody] Priority priority)
         {
             if (ModelState.IsValid)
@@ -91,8 +89,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        [Route("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromBody] int id)
         {
             var priorityResult = await _priorityService.DeletePriorityAsync(id);

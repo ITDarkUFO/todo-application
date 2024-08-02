@@ -10,7 +10,7 @@ namespace Application.Areas.Api.Controllers
     {
         private readonly IUsersService _usersService = usersService;
 
-        [Route("")]
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             var userResult = await _usersService.GetUserAsync(User);

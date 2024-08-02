@@ -13,14 +13,14 @@ namespace Application.Areas.Api.Controllers
     {
         private readonly IUsersService _usersService = usersService;
 
-        [Route("")]
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             var users = await _usersService.GetUsersListAsync();
             return Ok(users);
         }
 
-        [Route("details")]
+        [HttpGet("details")]
         public async Task<IActionResult> Details([FromQuery] string? id)
         {
             if (string.IsNullOrEmpty(id))
@@ -37,8 +37,7 @@ namespace Application.Areas.Api.Controllers
             return NotFound();
         }
 
-        [Route("create")]
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] AdminUserRegistrationDto request)
         {
             if (ModelState.IsValid)
@@ -60,8 +59,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(request);
         }
 
-        [Route("edit")]
-        [HttpPost]
+        [HttpPut("edit")]
         public async Task<IActionResult> Edit([FromBody] AdminUserEditDto request)
         {
             if (ModelState.IsValid)
@@ -83,8 +81,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(request);
         }
 
-        [Route("delete")]
-        [HttpPost]
+        [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromBody] string id)
         {
             var userResult = await _usersService.DeleteUserAsync(id);

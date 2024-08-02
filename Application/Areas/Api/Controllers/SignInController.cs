@@ -13,8 +13,7 @@ namespace Application.Areas.Api.Controllers
     {
         private readonly IUsersService _usersService = usersService;
 
-        [HttpPost]
-        [Route("login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
             if (ModelState.IsValid)
@@ -36,8 +35,7 @@ namespace Application.Areas.Api.Controllers
             return BadRequest(request);
         }
 
-        [HttpPost]
-        [Route("register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto request)
         {
             if (ModelState.IsValid)
